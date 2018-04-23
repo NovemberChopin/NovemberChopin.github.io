@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2018-04-22T19:40:34.284Z</updated>
+  <updated>2018-04-23T16:36:31.908Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -21,7 +21,7 @@
     <link href="http://yoursite.com/2018/04/23/Slogan/"/>
     <id>http://yoursite.com/2018/04/23/Slogan/</id>
     <published>2018-04-22T19:38:34.000Z</published>
-    <updated>2018-04-22T19:40:34.284Z</updated>
+    <updated>2018-04-23T16:36:31.908Z</updated>
     
     <content type="html"><![CDATA[<p>Don’t aim for success if you really want it, just stick to what you love and believe in, and it will come natually!</p>]]></content>
     
@@ -35,6 +35,8 @@
     
     </summary>
     
+    
+      <category term="English" scheme="http://yoursite.com/tags/English/"/>
     
   </entry>
   
