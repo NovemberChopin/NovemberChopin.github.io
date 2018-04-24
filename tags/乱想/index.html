@@ -82,13 +82,12 @@
 
 
 <meta property="og:type" content="website">
-<meta property="og:title" content="Tagcloud">
-<meta property="og:url" content="http://yoursite.com/tags/tags.html">
+<meta property="og:title" content="JS-Blog">
+<meta property="og:url" content="http://yoursite.com/tags/乱想/index.html">
 <meta property="og:site_name" content="JS-Blog">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2018-04-23T16:26:41.043Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Tagcloud">
+<meta name="twitter:title" content="JS-Blog">
 
 
 
@@ -118,13 +117,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/tags/tags.html"/>
+  <link rel="canonical" href="http://yoursite.com/tags/乱想/"/>
 
 
 
 
 
-  <title>Tagcloud | JS-Blog</title>
+  <title>Tag: 乱想 | JS-Blog</title>
   
 
 
@@ -143,7 +142,7 @@
     
   
 
-  <div class="container sidebar-position-left page-post-detail">
+  <div class="container sidebar-position-left ">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -189,6 +188,36 @@
         </li>
       
         
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            About
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            Tags
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            Categories
+          </a>
+        </li>
+      
+        
         <li class="menu-item menu-item-archives">
           <a href="/archives/" rel="section">
             
@@ -217,54 +246,61 @@
           <div id="content" class="content">
             
 
-  <div id="posts" class="posts-expand">
-    
-    
-    
-    <div class="post-block page">
-      <header class="post-header">
+  
+  
+  
+  <div class="post-block tag">
 
-	<h1 class="post-title" itemprop="name headline">Tagcloud</h1>
-
-
-
-</header>
-
-      
-      
-      
-      <div class="post-body">
-        
-        
-          <div class="tag-cloud">
-            <div class="tag-cloud-title">
-                No tags
-            </div>
-            <div class="tag-cloud-tags">
-              
-            </div>
-          </div>
-        
+    <div id="posts" class="posts-collapse">
+      <div class="collection-title">
+        <h1>乱想<small>Tag</small>
+        </h1>
       </div>
+
       
-      
+        
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+    <header class="post-header">
+
+      <h2 class="post-title">
+        
+            <a class="post-title-link" href="/2018/04/24/熵：宇宙终极规则/" itemprop="url">
+              
+                <span itemprop="name">熵：宇宙终极规则</span>
+              
+            </a>
+        
+      </h2>
+
+      <div class="post-meta">
+        <time class="post-time" itemprop="dateCreated"
+              datetime="2018-04-24T01:52:26+08:00"
+              content="2018-04-24" >
+          04-24
+        </time>
+      </div>
+
+    </header>
+  </article>
+
+
       
     </div>
-    
-    
-    
+
   </div>
-
-
-          </div>
-          
-
-
-          
+  
+  
+  
 
   
 
 
+          </div>
+          
+
+
+          
 
         </div>
         
@@ -301,7 +337,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-count">3</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
@@ -309,6 +345,15 @@
 
             
 
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">tags</span>
+                
+              </div>
             
 
           </nav>
@@ -482,10 +527,6 @@
 
 
   
-  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
-<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
-
-
 
   
 
@@ -524,6 +565,28 @@
 
 
 
+
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+  
+  <script type="text/javascript">
+    var GUEST = ['nick','mail','link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item=>{
+      return GUEST.indexOf(item)>-1;
+    });
+    new Valine({
+        el: '#comments' ,
+        verify: false,
+        notify: false,
+        appId: '56abDtFBqejHUEieaClkaRWU-gzGzoHsz',
+        appKey: '29Ajtk3T9ucyAQFPSftSnsm9',
+        placeholder: 'Just go go',
+        avatar:'mm',
+        guest_info:guest,
+        pageSize:'10' || 10,
+    });
+  </script>
 
 
 
