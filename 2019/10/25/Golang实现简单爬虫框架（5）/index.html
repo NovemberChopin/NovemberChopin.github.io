@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="description" content="">
+  <meta name="author" content="JS">
+  <meta name="keywords" content="">
+  <title>JS-Blog</title>
+
+  <link rel="stylesheet" href="/lib/font-awesome/css/all.min.css"  >
+<link rel="stylesheet" href="/lib/bootstrap/css/bootstrap.min.css"  >
+<link rel="stylesheet" href="/lib/mdbootstrap/css/mdb.min.css"  >
+<link rel="stylesheet" href="/lib/github-markdown/github-markdown.min.css"  >
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1067060_qzomjdt8bmp.css">
+
+
+  <link rel="stylesheet" href="/lib/prettify/tomorrow-night-eighties.min.css"  >
+
+<link rel="stylesheet" href="/css/main.css"  >
+
+
+  <link rel="stylesheet" href="/lib/fancybox/jquery.fancybox.min.css"  >
+
+
+  
+
+
+
+</head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>JS-Blog</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">Home</a>
+          </li>
+        
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/archives/">Archives</a>
+          </li>
+        
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/">Categories</a>
+          </li>
+        
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/tags/">Tags</a>
+          </li>
+        
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">About</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+
+</nav>
+
+    <div class="view intro-2" id="background"
+         style="background: url('/img/default.png')no-repeat center center;
+           background-size: cover;
+           background-attachment: fixed;">
+      <div class="full-bg-img">
+        <div class="mask rgba-black-light flex-center">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              <br>
+              <p class="mt-3">星期五, 十月 25日 2019, 8:59 晚上</p>
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-md">
+      <div class="py-5 z-depth-3" id="board">
+        <div class="post-content mx-auto" id="post">
+          <div class="markdown-body">
+            <h1 id="Golang实现简单爬虫框架（5）——项目重构与数据存储"><a href="#Golang实现简单爬虫框架（5）——项目重构与数据存储" class="headerlink" title="Golang实现简单爬虫框架（5）——项目重构与数据存储"></a>Golang实现简单爬虫框架（5）——项目重构与数据存储</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>在上一篇文章<a href="https://www.jianshu.com/p/0eaaa1626d6f" target="_blank" rel="noopener">《Golang实现简单爬虫框架（4）——队列实现并发任务调度》</a>中，我们使用用队列实现了任务调度，接下来首先对两种并发方式做一个同构，使代码统一。然后添加数据存储模块。</p>
+<p><strong>注意：本次并发是在上一篇文章简单并发实现的基础上修改，所以没有贴出全部代码，只是贴出部分修改部分，要查看完整项目代码，可以查看上篇文章，或者从github下载<a href="https://github.com/NovemberChopin/golang-crawler" target="_blank" rel="noopener">项目源代码查看</a></strong></p>
+<h2 id="1、项目重构"><a href="#1、项目重构" class="headerlink" title="1、项目重构"></a>1、项目重构</h2><h3 id="（1）并发引擎"><a href="#（1）并发引擎" class="headerlink" title="（1）并发引擎"></a>（1）并发引擎</h3><p>通过分析我们发现，两种不同调度的区别是每个<code>worker</code>一个<code>channel</code>还是 所有<code>worker</code>共用一个<code>channel</code>，所以我们在接口中定义一个函数<code>WorkerChan()</code>，用来决定这件事，即<code>worker</code>一个<code>channel</code>还是 所有<code>worker</code>共用一个<code>channel</code>。此时<code>ConfigMasterWorkerChan</code>就不再需要了。</p>
+<p>在项目文件concurrent.go中我们定义一个任务调度器Scheduler，如下：</p>
+<pre><code class="go">// 任务调度器
+type Scheduler interface {
+    Submit(request Request) // 提交任务
+    ConfigMasterWorkerChan(chan Request)
+    WorkerReady(w chan Request)
+    Run()
+}
+</code></pre>
+<p>但是在简单并发中我们只实现了<code>Submit</code>和<code>ConfigMasterWorkerChan</code>接口，而使用队列调度中却实现了接口的所有方法，所有我们同构一下使<code>concurrent.go</code>文件可以适用于两种不同的调度器。</p>
+<p>因为在<code>createworker</code>函数中要使用<code>WorkerReady</code>函数，所以要传入一个<code>Scheduler</code>，但是这样显得比较重，我们可以利用接口组合，新建一个接口<code>ReadyNotifier</code>，这样在<code>createworker</code>函数中传入<code>ReadyNotifier</code>即可。</p>
+<p>修改后的任务调度如下：</p>
+<pre><code class="go">type Scheduler interface {
+    ReadyNotifier
+    Submit(request Request) // 提交任务
+    WorkerChan() chan Request
+    Run()
+}
+type ReadyNotifier interface {
+    WorkerReady(chan Request)
+}
+</code></pre>
+<p>此时创建goroutine修改如下：</p>
+<pre><code class="go">// 创建 goroutine
+for i := 0; i &lt; e.WorkerCount; i++ {
+    //任务是每个 worker 一个 channel 还是 所有 worker 共用一个 channel 由WorkerChan 来决定
+    createWorker(e.Scheduler.WorkerChan(), out, e.Scheduler)
+}
+</code></pre>
+<p>修改后的concurrent.go文件如下：</p>
+<pre><code class="go">package engine
+
+import (
+    &quot;log&quot;
+)
+
+// 并发引擎
+type ConcurrendEngine struct {
+    Scheduler   Scheduler
+    WorkerCount int
+}
+
+// 任务调度器
+type Scheduler interface {
+    ReadyNotifier
+    Submit(request Request) // 提交任务
+    WorkerChan() chan Request
+    Run()
+}
+type ReadyNotifier interface {
+    WorkerReady(chan Request)
+}
+
+func (e *ConcurrendEngine) Run(seeds ...Request) {
+
+    out := make(chan ParseResult)
+    e.Scheduler.Run()
+
+    // 创建 goruntine
+    for i := 0; i &lt; e.WorkerCount; i++ {
+        // 任务是每个 worker 一个 channel 还是 所有 worker 共用一个 channel 由WorkerChan 来决定
+        createWorker(e.Scheduler.WorkerChan(), out, e.Scheduler)
+    }
+
+    // engine把请求任务提交给 Scheduler
+    for _, request := range seeds {
+        e.Scheduler.Submit(request)
+    }
+
+    itemCount := 0
+    for {
+        // 接受 Worker 的解析结果
+        result := &lt;-out
+        for _, item := range result.Items {
+            log.Printf(&quot;Got item: #%d: %v\n&quot;, itemCount, item)
+            itemCount++
+        }
+
+        // 然后把 Worker 解析出的 Request 送给 Scheduler
+        for _, request := range result.Requests {
+            e.Scheduler.Submit(request)
+        }
+    }
+}
+
+func createWorker(in chan Request, out chan ParseResult, ready ReadyNotifier) {
+    go func() {
+        for {
+            ready.WorkerReady(in) // 告诉调度器任务空闲
+            request := &lt;-in
+            result, err := worker(request)
+            if err != nil {
+                continue
+            }
+            out &lt;- result
+        }
+    }()
+}
+</code></pre>
+<h3 id="（2）简单并发调度器"><a href="#（2）简单并发调度器" class="headerlink" title="（2）简单并发调度器"></a>（2）简单并发调度器</h3><p>scheduler/simple.go</p>
+<pre><code class="go">package scheduler
+
+import &quot;crawler/engine&quot;
+
+type SimpleScheduler struct {
+    workerChan chan engine.Request
+}
+
+func (s *SimpleScheduler) WorkerChan() chan engine.Request {
+    // 此时所有 worker 共用同一个 channel，直接返回即可
+    return s.workerChan
+}
+
+func (s *SimpleScheduler) WorkerReady(w chan engine.Request) {
+
+}
+
+func (s *SimpleScheduler) Run() {
+    // 创建出 workchannel
+    s.workerChan = make(chan engine.Request)
+}
+
+func (s *SimpleScheduler) Submit(request engine.Request) {
+    // send request down to worker chan
+    go func() {
+        s.workerChan &lt;- request
+    }()
+}
+</code></pre>
+<h3 id="（3）队列实现调度器"><a href="#（3）队列实现调度器" class="headerlink" title="（3）队列实现调度器"></a>（3）队列实现调度器</h3><p>scheduler/queued.go</p>
+<p>添加<code>WorkerChan()</code>的实现即可</p>
+<pre><code class="go">package scheduler
+
+import &quot;crawler/engine&quot;
+
+// 使用队列来调度任务
+
+type QueuedScheduler struct {
+    requestChan chan engine.Request
+    workerChan  chan chan engine.Request
+}
+
+func (s *QueuedScheduler) WorkerChan() chan engine.Request {
+    // 对于队列实现来讲，每个 worker 共用一个 channel
+    return make(chan engine.Request)
+}
+
+// 提交请求任务到 requestChan
+func (s *QueuedScheduler) Submit(request engine.Request) {
+    s.requestChan &lt;- request
+}
+
+// 告诉外界有一个 worker 可以接收 request
+func (s *QueuedScheduler) WorkerReady(w chan engine.Request) {
+    s.workerChan &lt;- w
+}
+
+func (s *QueuedScheduler) Run() {
+    s.workerChan = make(chan chan engine.Request)
+    s.requestChan = make(chan engine.Request)
+    go func() {
+        // 创建请求队列和工作队列
+        var requestQ []engine.Request
+        var workerQ []chan engine.Request
+        for {
+            var activeWorker chan engine.Request
+            var activeRequest engine.Request
+
+            if len(requestQ) &gt; 0 &amp;&amp; len(workerQ) &gt; 0 {
+                activeWorker = workerQ[0]
+                activeRequest = requestQ[0]
+            }
+
+            select {
+            case r := &lt;-s.requestChan: // 当 requestChan 收到数据
+                requestQ = append(requestQ, r)
+            case w := &lt;-s.workerChan: // 当 workerChan 收到数据
+                workerQ = append(workerQ, w)
+            case activeWorker &lt;- activeRequest: // 当请求队列和认读队列都不为空时，给任务队列分配任务
+                requestQ = requestQ[1:]
+                workerQ = workerQ[1:]
+            }
+        }
+    }()
+}
+</code></pre>
+<h3 id="（4）main函数"><a href="#（4）main函数" class="headerlink" title="（4）main函数"></a>（4）main函数</h3><p>经过上述同构，在main函数中如需切换不同调度器，只需要相应的配置即可。</p>
+<pre><code class="go">package main
+
+import (
+    &quot;crawler/engine&quot;
+    &quot;crawler/scheduler&quot;
+    &quot;crawler/zhenai/parser&quot;
+)
+
+func main() {
+    e := engine.ConcurrendEngine{
+        //Scheduler: &amp;scheduler.QueuedScheduler{},    // 队列实现调度器
+        Scheduler:   &amp;scheduler.SimpleScheduler{},    // 简单并发调度
+        WorkerCount: 50,
+    }
+    e.Run(engine.Request{
+        Url:       &quot;http://www.zhenai.com/zhenghun&quot;,
+        ParseFunc: parser.ParseCityList,
+    })
+}
+</code></pre>
+<h2 id="2、数据存储"><a href="#2、数据存储" class="headerlink" title="2、数据存储"></a>2、数据存储</h2><h3 id="（1）Mgo的介绍安装"><a href="#（1）Mgo的介绍安装" class="headerlink" title="（1）Mgo的介绍安装"></a>（1）Mgo的介绍安装</h3><p>爬取到的数据不能仅仅在控制台打印出来，所以我们还要给爬虫添加数据存储模块。我们本次选择使用mongodb来存储我们的数据。</p>
+<blockquote>
+<p>mgo（音mango）是<a href="http://www.mongodb.org/" target="_blank" rel="noopener">MongoDB</a>的<a href="http://golang.org/" target="_blank" rel="noopener">Go语言</a>驱动，它用基于Go语法的简单API实现了丰富的特性，并经过良好测试。</p>
+</blockquote>
+<p>官方网址：<a href="http://labix.org/mgo" target="_blank" rel="noopener">http://labix.org/mgo</a></p>
+<p>文档：<a href="https://gopkg.in/mgo.v2" target="_blank" rel="noopener">API docs for mgo</a></p>
+<p>首先我们要安装mgo，打开终端，输入下面代码完成安装</p>
+<pre><code class="go">go get gopkg.in/mgo.v2
+</code></pre>
+<p>mgo基本操作都很简单，有数据库操作经验都可以很快上手。</p>
+<h3 id="（2）爬虫引擎与数据格式"><a href="#（2）爬虫引擎与数据格式" class="headerlink" title="（2）爬虫引擎与数据格式"></a>（2）爬虫引擎与数据格式</h3><p>首先，爬虫引擎获取到数据要把数据发送给数据存储模块，而数据的传递用要用到<code>channel</code>，所以打开<code>concurrent.go</code>文件，在引擎添加<code>ItemChan</code>属性，如下所示：</p>
+<p>爬取到数据需要把数据发送到数据存储模块，</p>
+<pre><code class="go">package engine
+// 并发引擎
+type ConcurrendEngine struct {
+    Scheduler   Scheduler // 任务调度器
+    WorkerCount int       // 并发任务数量
+    ItemChan    chan Item // 数据保存 channel
+}
+
+// ...
+for {
+    // 接受 Worker 的解析结果
+    result := &lt;-out
+    for _, item := range result.Items {
+        // 当抓取一组数据后，进行保存
+        go func(item2 Item) {
+            e.ItemChan &lt;- item2
+        }(item)
+    }
+    // ...
+}
+// ...
+</code></pre>
+<p>在<code>engine/types.go</code>中定义Item类型：</p>
+<pre><code class="go">package engine
+
+// 请求结构
+type Request struct {
+    Url       string // 请求地址
+    ParseFunc func([]byte) ParseResult
+}
+
+// 解析结果结构
+type ParseResult struct {
+    Requests []Request // 解析出的请求
+    Items    []Item    // 解析出的内容
+}
+
+// 解析出的用户数据格式
+type Item struct {
+    Url     string      // 个人信息Url地址
+    Type    string      // table
+    Id      string      // Id
+    Payload interface{} // 详细信息
+}
+
+func NilParseFun([]byte) ParseResult {
+    return ParseResult{}
+}
+</code></pre>
+<h3 id="（3）存储模块的实现"><a href="#（3）存储模块的实现" class="headerlink" title="（3）存储模块的实现"></a>（3）存储模块的实现</h3><p>在根目录下创建persist文件夹，然后创建itemsaver.go文件</p>
+<pre><code class="go">// persist/itemsaver.go
+package persist
+
+import (
+    &quot;context&quot;
+    &quot;crawler/engine&quot;
+    &quot;errors&quot;
+    &quot;gopkg.in/mgo.v2&quot;
+    &quot;gopkg.in/olivere/elastic.v5&quot;
+    &quot;log&quot;
+)
+
+func ItemSaver(index string) (chan engine.Item, error) {
+    // mongodb connect
+    session, err := mgo.Dial(&quot;localhost:27017&quot;)
+    if err != nil {
+        panic(err)
+    }
+
+    out := make(chan engine.Item)
+    go func() {
+        itemCount := 0
+        for {
+            // 接收到发送的 item
+            item := &lt;-out
+            log.Printf(&quot;Item Saver: got item #%d: %v\n&quot;,
+                itemCount, item)
+            itemCount++
+
+            // Save data in mongodb
+            err := mongo_save(session, index, item)
+
+            if err != nil {
+                // if have err, ignore it
+                log.Printf(&quot;Item Saver: error, saving item %v: %v&quot;,
+                    item, err)
+            }
+        }
+    }()
+    return out, nil
+}
+
+// 使用 MongoDB 保存数据
+func mongo_save(session *mgo.Session, dbName string, item engine.Item) error {
+    if item.Type == &quot;&quot; {
+        return errors.New(&quot;must supply Type&quot;)
+    }
+    c := session.DB(dbName).C(item.Type)    // 选择要操作的数据库与集合
+    err := c.Insert(item)        // 插入数据
+    if err != nil {
+        log.Fatal(err)
+    }
+    return nil
+}
+</code></pre>
+<h3 id="（4）存储测试文件"><a href="#（4）存储测试文件" class="headerlink" title="（4）存储测试文件"></a>（4）存储测试文件</h3><p>我们把一条数据存入mongodb，然后再取出来，比对读出的数据和写入的数据是否相同</p>
+<pre><code class="go">// persist/itemsaver_test.gp
+package persist
+
+import (
+    &quot;crawler/engine&quot;
+    &quot;crawler/model&quot;
+    &quot;encoding/json&quot;
+    &quot;fmt&quot;
+    &quot;gopkg.in/mgo.v2&quot;
+    &quot;gopkg.in/mgo.v2/bson&quot;
+    &quot;log&quot;
+    &quot;testing&quot;
+)
+func TestMongoSave(t *testing.T) {
+    // mongodb connect
+    session, err := mgo.Dial(&quot;localhost:27017&quot;)
+    if err != nil {
+        panic(err)
+    }
+
+    expected := engine.Item{
+        Url:  &quot;http://album.zhenai.com/u/1946858930&quot;,
+        Type: &quot;zhenai&quot;,
+        Id:   &quot;1946858930&quot;,
+        Payload: model.Profile{
+            Name:     &quot;為你垨候&quot;,
+            Gender:   &quot;女士&quot;,
+            Age:      40,
+            Height:   163,
+            Weight:   54,
+            Income:   &quot;5-8千&quot;,
+            Marriage: &quot;未婚&quot;,
+            Address:  &quot;佛山顺德区&quot;,
+        },
+    }
+    // 保存数据
+    err = mongo_save(session, &quot;crawler&quot;, expected)
+    if err != nil {
+        panic(err)
+    }
+
+    c := session.DB(&quot;crawler&quot;).C(&quot;zhenai&quot;)
+
+    var result engine.Item
+    // 查询数据
+    err = c.Find(bson.M{&quot;id&quot;: &quot;1946858930&quot;}).One(&amp;result)
+    // result 为 Json 类型
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Printf(&quot;%s, %s, %v\n&quot;, result.Url, result.Id, result.Payload)
+}
+</code></pre>
+<h3 id="（5）parser模块"><a href="#（5）parser模块" class="headerlink" title="（5）parser模块"></a>（5）parser模块</h3><p>我们要在<code>parse/profile.go</code>文件中组装好需要保存到数据库的数据格式</p>
+<pre><code class="go">// ...
+result := engine.ParseResult{
+    Items: []engine.Item{
+        {
+            Url:     url,
+            Type:    &quot;zhenai&quot;,
+            Id:      extractString([]byte(url), idUrlRe),
+            Payload: profile,
+        },
+    },
+}
+// ...
+</code></pre>
+<h3 id="（6）main函数"><a href="#（6）main函数" class="headerlink" title="（6）main函数"></a>（6）main函数</h3><pre><code class="go">package main
+
+import (
+    &quot;crawler/engine&quot;
+    &quot;crawler/persist&quot;
+    &quot;crawler/scheduler&quot;
+    &quot;crawler/zhenai/parser&quot;
+)
+
+func main() {
+    itemChan, err := persist.ItemSaver()
+    if err != nil {
+        panic(err)
+    }
+
+    e := engine.ConcurrendEngine{
+        //Scheduler: &amp;scheduler.QueuedScheduler{},
+        Scheduler:   &amp;scheduler.SimpleScheduler{},
+        WorkerCount: 100,
+        ItemChan:    itemChan,
+    }
+    e.Run(engine.Request{
+        Url:       &quot;http://www.zhenai.com/zhenghun&quot;,
+        ParseFunc: parser.ParseCityList,
+    })
+}
+</code></pre>
+<p>运行项目，打开mongodb可视化工具，可以看到爬取了54410条数据</p>
+<p><img src="http://ps5qm062j.bkt.clouddn.com/%E6%89%B9%E6%B3%A8%202019-05-23%20182059.png" srcset="/img/loading.gif" alt=""></p>
+<h2 id="3、总结"><a href="#3、总结" class="headerlink" title="3、总结"></a>3、总结</h2><p>我们首先把两种并发方式做一个同构，使代码统一，直接在main函数中使用不同的配置就可以切换调度器，简单方便。然后使用Mgo驱动操作数据，添加到mongodb中。内容有点多，很多代码没有完整的展示出来，希望大家可以下载<a href="https://github.com/NovemberChopin/golang-crawler" target="_blank" rel="noopener">项目源代码</a>，回滚到对应提交记录查看，效果会更好。 别无所求，只求随手给个star</p>
+<p>下篇博客中我们会再当前博客的基础上添加数据展示功能</p>
+<p>如果想获取<a href="https://coding.imooc.com/class/180.html" target="_blank" rel="noopener">Google工程师深度讲解go语言</a>视频资源的，可以在评论区留下邮箱。</p>
+<p>如果觉得文章还可以，劳烦大人随手点个赞。。。</p>
+
+            <hr>
+          </div>
+          <br>
+          <div>
+            
+            <p>
+              <i class="iconfont icon-tag"></i>
+              
+              <span id="/2019/10/25/Golang实现简单爬虫框架（5）/" class="visitors leancloud_visitors" data-flag-title="">
+                <em id="visitors-text" class="post-meta-item-text"></em>
+                <i id="visitors-count"></i>
+              </span>
+            </p>
+            
+              <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" rel="nofollow noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="d-none d-lg-block col-lg-2 toc-container">
+      
+  <div id="toc">
+    <p class="h4"><i class="far fa-list-alt"></i>&nbsp;目录</p>
+    <div id="tocbot"></div>
+  </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- custom -->
+
+
+<!-- Comments -->
+<div class="col-lg-7 mx-auto nopadding-md">
+  <div class="container comments mx-auto" id="comments">
+    
+  </div>
+</div>
+
+    
+  </main>
+
+  
+    <a class="z-depth-1" id="scroll-top-button" href="#" role="button">
+      <i class="fa fa-chevron-up scroll-top-arrow" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><b>Hexo</b></a>
+    <i class="iconfont icon-love"></i>
+    <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"> <b>Fluid</b></a>
+    <br>
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script src="/lib/jquery/jquery.min.js" ></script>
+<script src="/lib/popper/popper.min.js" ></script>
+<script src="/lib/bootstrap/js/bootstrap.min.js" ></script>
+<script src="/lib/mdbootstrap/js/mdb.min.js" ></script>
+<script src="/js/main.js" ></script>
+
+
+  <script src="/js/lazyload.js" ></script>
+
+
+  
+    <script src="/lib/tocbot/tocbot.min.js" ></script>
+  
+  <script src="/js/post.js" ></script>
+
+
+  <script src="/lib/prettify/prettify.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      $('pre').addClass('prettyprint  linenums');
+      prettyPrint();
+    })
+  </script>
+
+
+
+  <script src="/lib/typed/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script src="/lib/anchor/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "false",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script src="/lib/fancybox/jquery.fancybox.min.js" ></script>
+  <script>
+    $('#post').find('img').each(
+      function () {
+        var _this = $(this);
+        var _src = _this.attr("src");
+        _this.wrap('<a data-fancybox="images" href="' + _src + '" ></a>');
+      }
+    );
+  </script>
+
+
+
+  <script src="/lib/smooth-scroll/smooth-scroll.min.js" ></script>
+
+
+
+
+</body>
+</html>

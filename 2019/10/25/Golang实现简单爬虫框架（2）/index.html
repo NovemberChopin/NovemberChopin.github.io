@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="description" content="">
+  <meta name="author" content="JS">
+  <meta name="keywords" content="">
+  <title>Golang实现简单爬虫框架（2）——单任务版爬虫 ~ JS-Blog</title>
+
+  <link rel="stylesheet" href="/lib/font-awesome/css/all.min.css"  >
+<link rel="stylesheet" href="/lib/bootstrap/css/bootstrap.min.css"  >
+<link rel="stylesheet" href="/lib/mdbootstrap/css/mdb.min.css"  >
+<link rel="stylesheet" href="/lib/github-markdown/github-markdown.min.css"  >
+<link rel="stylesheet" href="https://at.alicdn.com/t/font_1067060_qzomjdt8bmp.css">
+
+
+  <link rel="stylesheet" href="/lib/prettify/tomorrow-night-eighties.min.css"  >
+
+<link rel="stylesheet" href="/css/main.css"  >
+
+
+  <link rel="stylesheet" href="/lib/fancybox/jquery.fancybox.min.css"  >
+
+
+  
+
+
+
+</head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>JS-Blog</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/">Home</a>
+          </li>
+        
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/archives/">Archives</a>
+          </li>
+        
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/categories/">Categories</a>
+          </li>
+        
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/tags/">Tags</a>
+          </li>
+        
+          
+          
+          <li class="nav-item">
+            <a class="nav-link" href="/about/">About</a>
+          </li>
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+
+</nav>
+
+    <div class="view intro-2" id="background"
+         style="background: url('/img/default.png')no-repeat center center;
+           background-size: cover;
+           background-attachment: fixed;">
+      <div class="full-bg-img">
+        <div class="mask rgba-black-light flex-center">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+
+            
+              <br>
+              <p class="mt-3">星期五, 十月 25日 2019, 8:41 晚上</p>
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-md">
+      <div class="py-5 z-depth-3" id="board">
+        <div class="post-content mx-auto" id="post">
+          <div class="markdown-body">
+            <p>上一篇博客<a href="https://blog.csdn.net/november_chopin/article/details/90414805" target="_blank" rel="noopener">《Golang实现简单爬虫框架（1）——项目介绍与环境准备》</a>中我们介绍了go语言的开发环境搭建，以及爬虫项目介绍。<br><a id="more"></a><br>本次爬虫爬取的是<a href="http://www.zhenai.com" target="_blank" rel="noopener">珍爱网</a>的用户信息数据，爬取步骤为：</p>
+<ul>
+<li>1.进入珍爱网<a href="http://www.zhenai.com/zhenghun" target="_blank" rel="noopener">城市页面</a>爬取所有的城市信息</li>
+<li>2.进入<a href="http://www.zhenai.com/zhenghun/yantai" target="_blank" rel="noopener">城市详情页</a>爬取用户URL地址信息</li>
+<li>3.进入<a href="http://album.zhenai.com/u/1461901396" target="_blank" rel="noopener">用户详情页</a>爬取所需要的用户信息</li>
+</ul>
+<p><strong>注意：在本此爬虫项目中，只会实现一个简单的爬虫架构，包括单机版实现、简单并发版以及使用队列进行任务调度的并发版实现，以及数据存储和展示功能。不涉及模拟登录、动态IP等技术，如果你是GO语言新手想找练习项目或者对爬虫感兴趣的读者，请放心食用。</strong></p>
+<h4 id="1、单任务版爬虫架构"><a href="#1、单任务版爬虫架构" class="headerlink" title="1、单任务版爬虫架构"></a>1、单任务版爬虫架构</h4><p>首先我们实现一个单任务版的爬虫，且不考虑数据存储与展示模块，首先把基本功能实现。下面是单任务版爬虫的整体框架</p>
+<p><img src="http://ps5qm062j.bkt.clouddn.com/%E6%89%B9%E6%B3%A8%202019-05-20%20114847.png" srcset="/img/loading.gif" alt="单任务版爬虫整体框架"></p>
+<p>下面是具体流程说明：</p>
+<ul>
+<li>1、首先需要配置种子请求，就是seed，存储项目爬虫的初始入口</li>
+<li>2、把初始入口信息发送给爬虫引擎，引擎把其作为任务信息放入任务队列，只要任务队列不空就一直从任务队列中取任务</li>
+<li>3、取出任务后，engine把要请求的任务交给Fetcher模块，Fetcher模块负责通过URL抓取网页数据，然后把数据返回给Engine</li>
+<li>4、Engine收到网页数后，把数据交给解析（Parser）模块，Parser解析出需要的数据后返回给Engine，Engine收到解析出的信息在控制台打印出来</li>
+</ul>
+<p>项目目录</p>
+<p><img src="http://ps5qm062j.bkt.clouddn.com/%E6%89%B9%E6%B3%A8%202019-05-20%20115906.png" srcset="/img/loading.gif" alt="项目目录"></p>
+<h4 id="2、数据结构定义"><a href="#2、数据结构定义" class="headerlink" title="2、数据结构定义"></a>2、数据结构定义</h4><p>在正式开始讲解前先看一下项目中的数据结构。</p>
+<pre><code class="go">// /engine/types.go
+
+package engine
+
+// 请求结构
+type Request struct {
+    Url       string // 请求地址
+    ParseFunc func([]byte) ParseResult    // 解析函数
+}
+
+// 解析结果结构
+type ParseResult struct {
+    Requests []Request     // 解析出的请求
+    Items    []interface{} // 解析出的内容
+}
+</code></pre>
+<p><code>Request</code>表示一个爬取请求，包括请求的<code>URL</code>地址和使用的解析函数，其解析函数返回值是一个<code>ParseResult</code>类型，其中<code>ParseResult</code>类型包括解析出的请求和解析出的内容。解析内容<code>Items</code>是一个<code>interface{}</code>类型，即这部分具体数据结构由用户自己来定义。</p>
+<p><strong><em>注意：对于<code>Request</code>中的解析函数，对于每一个URL使用城市列表解析器还是用户列表解析器，是由我们的具体业务来决定的，对于<code>Engine</code>模块不必知道解析函数具体是什么，只负责<code>Request</code>中的解析函数来解析传入的URL对应的网页数据</em></strong></p>
+<p>需要爬取的数据的定义</p>
+<pre><code class="go">// /model/profile.go
+package model
+
+// 用户的个人信息
+type Profile struct {
+    Name     string
+    Gender   string
+    Age      int
+    Height   int
+    Weight   int
+    Income   string
+    Marriage string
+    Address  string
+}
+</code></pre>
+<h4 id="3、Fetcher的实现"><a href="#3、Fetcher的实现" class="headerlink" title="3、Fetcher的实现"></a>3、Fetcher的实现</h4><p>Fetcher模块任务是获取目标URL的网页数据，先放上代码。</p>
+<pre><code class="go">// /fetcher/fetcher.go
+package fetcher
+
+import (
+    &quot;bufio&quot;
+    &quot;fmt&quot;
+    &quot;io/ioutil&quot;
+    &quot;log&quot;
+    &quot;net/http&quot;
+
+    &quot;golang.org/x/net/html/charset&quot;
+    &quot;golang.org/x/text/encoding&quot;
+    &quot;golang.org/x/text/encoding/unicode&quot;
+    &quot;golang.org/x/text/transform&quot;
+)
+
+// 网页内容抓取函数
+func Fetch(url string) ([]byte, error) {
+
+    client := &amp;http.Client{}
+    req, err := http.NewRequest(&quot;GET&quot;, url, nil)
+    if err != nil {
+        log.Fatalln(err)
+    }
+    req.Header.Set(&quot;User-Agent&quot;, &quot;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36&quot;)
+
+    resp, err := client.Do(req)
+    if err != nil {
+        return nil, err
+    }
+
+    defer resp.Body.Close()
+
+    // 出错处理
+    if resp.StatusCode != http.StatusOK {
+        return nil, fmt.Errorf(&quot;wrong state code: %d&quot;, resp.StatusCode)
+    }
+
+    // 把网页转为utf-8编码
+    bodyReader := bufio.NewReader(resp.Body)
+    e := determineEncoding(bodyReader)
+    utf8Reader := transform.NewReader(bodyReader, e.NewDecoder())
+    return ioutil.ReadAll(utf8Reader)
+}
+
+func determineEncoding(r *bufio.Reader) encoding.Encoding {
+    bytes, err := r.Peek(1024)
+    if err != nil {
+        log.Printf(&quot;Fetcher error %v\n&quot;, err)
+        return unicode.UTF8
+    }
+    e, _, _ := charset.DetermineEncoding(bytes, &quot;&quot;)
+    return e
+}
+</code></pre>
+<p>因为许多网页的编码是GBK，我们需要把数据转化为utf-8编码，这里需要下载一个包来完成转换，打开终端输入<code>gopm get -g -v golang.org/x/text</code>可以把GBK编码转化为utf-8编码。在上面代码</p>
+<pre><code class="go">bodyReader := bufio.NewReader(resp.Body)
+    e := determineEncoding(bodyReader)
+    utf8Reader := transform.NewReader(bodyReader, e.NewDecoder())
+</code></pre>
+<p>可以写为<code>utf8Reader := transform.NewReader(resp.Body, simplifiedchinese.GBK.NewDecoder())</code>也是可以的。但是这样问题是通用性太差，我们怎么知道网页是不是GBK编码呢？此时还可以引入另外一个库，可以帮助我们判断网页的编码。打开终端输入<code>gopm get -g -v golang.org/x/net/html</code>。然后把判断网页编码模块提取为一个函数，如上代码所示。</p>
+<h4 id="4、Parser模块实现"><a href="#4、Parser模块实现" class="headerlink" title="4、Parser模块实现"></a>4、Parser模块实现</h4><h5 id="1-解析城市列表与URL："><a href="#1-解析城市列表与URL：" class="headerlink" title="(1)解析城市列表与URL："></a>(1)解析城市列表与URL：</h5><pre><code class="go">// /zhenai/parser/citylist.go
+package parser
+
+import (
+    &quot;crawler/engine&quot;
+    &quot;regexp&quot;
+)
+
+const cityListRe = `&lt;a href=&quot;(http://www.zhenai.com/zhenghun/[0-9a-z]+)&quot;[^&gt;]*&gt;([^&lt;]+)&lt;/a&gt;`
+
+// 解析城市列表
+func ParseCityList(bytes []byte) engine.ParseResult {
+    re := regexp.MustCompile(cityListRe)
+    // submatch 是 [][][]byte 类型数据
+    // 第一个[]表示匹配到多少条数据，第二个[]表示匹配的数据中要提取的任容
+    submatch := re.FindAllSubmatch(bytes, -1)
+    result := engine.ParseResult{}
+    //limit := 10
+    for _, item := range submatch {
+        result.Items = append(result.Items, &quot;City:&quot;+string(item[2]))
+        result.Requests = append(result.Requests, engine.Request{
+            Url:       string(item[1]),    // 每一个城市对应的URL
+            ParseFunc: ParseCity,        // 使用城市解析器
+        })
+        //limit--
+        //if limit == 0 {
+        //    break
+        //}
+    }
+    return result
+}
+
+</code></pre>
+<p>在上述代码中，获取页面中所有的城市与URL，然后把每个城市的<code>URL</code>作为下一个<code>Request</code>的<code>URL</code>，对应的解析器是<code>ParseCity</code>城市解析器。</p>
+<p>在对<code>ParseCityList</code>进行测试的时候，如果<code>ParseFunc: ParseCity,</code>,这样就会调用<code>ParseCity</code>函数，但是我们只想测试城市列表解析功能，不想调用<code>ParseCity</code>函数，此时可以定义一个函数<code>NilParseFun</code>,返回一个空的<code>ParseResult</code>，写成<code>ParseFunc: NilParseFun,</code>即可。</p>
+<pre><code class="go">func NilParseFun([]byte) ParseResult {
+    return ParseResult{}
+}
+</code></pre>
+<p>因为<code>http://www.zhenai.com/zhenghun</code>页面城市比较多，为了方便测试可以对解析的城市数量做一个限制，就是代码中的注释部分。</p>
+<p><strong><em>注意：在解析模块，具体解析哪些信息，以及正则表达式如何书写，不是本次重点。重点是理解各个解析模块之间的联系与函数调用，同下</em></strong> </p>
+<h5 id="2-解析用户列表与URL"><a href="#2-解析用户列表与URL" class="headerlink" title="(2)解析用户列表与URL"></a>(2)解析用户列表与URL</h5><pre><code class="go">// /zhenai/parse/city.go
+package parser
+
+import (
+    &quot;crawler/engine&quot;
+    &quot;regexp&quot;
+)
+
+var cityRe = regexp.MustCompile(`&lt;a href=&quot;(http://album.zhenai.com/u/[0-9]+)&quot;[^&gt;]*&gt;([^&lt;]+)&lt;/a&gt;`)
+
+// 用户性别正则，因为在用户详情页没有性别信息，所以在用户性别在用户列表页面获取
+var sexRe = regexp.MustCompile(`&lt;td width=&quot;180&quot;&gt;&lt;span class=&quot;grayL&quot;&gt;性别：&lt;/span&gt;([^&lt;]+)&lt;/td&gt;`)
+
+// 城市页面用户解析器
+func ParseCity(bytes []byte) engine.ParseResult {
+    submatch := cityRe.FindAllSubmatch(bytes, -1)
+    gendermatch := sexRe.FindAllSubmatch(bytes, -1)
+
+    result := engine.ParseResult{}
+
+    for k, item := range submatch {
+        name := string(item[2])
+        gender := string(gendermatch[k][1])
+
+        result.Items = append(result.Items, &quot;User:&quot;+name)
+        result.Requests = append(result.Requests, engine.Request{
+            Url: string(item[1]),
+            ParseFunc: func(bytes []byte) engine.ParseResult {
+                return ParseProfile(bytes, name, gender)
+            },
+        })
+    }
+    return result
+}
+
+</code></pre>
+<h5 id="3-解析用户数据"><a href="#3-解析用户数据" class="headerlink" title="(3)解析用户数据"></a>(3)解析用户数据</h5><pre><code class="go">package parser
+
+import (
+    &quot;crawler/engine&quot;
+    &quot;crawler/model&quot;
+    &quot;regexp&quot;
+    &quot;strconv&quot;
+)
+
+var ageRe = regexp.MustCompile(`&lt;div class=&quot;m-btn purple&quot; [^&gt;]*&gt;([\d]+)岁&lt;/div&gt;`)
+var heightRe = regexp.MustCompile(`&lt;div class=&quot;m-btn purple&quot; [^&gt;]*&gt;([\d]+)cm&lt;/div&gt;`)
+var weightRe = regexp.MustCompile(`&lt;div class=&quot;m-btn purple&quot; [^&gt;]*&gt;([\d]+)kg&lt;/div&gt;`)
+
+var incomeRe = regexp.MustCompile(`&lt;div class=&quot;m-btn purple&quot; [^&gt;]*&gt;月收入:([^&lt;]+)&lt;/div&gt;`)
+var marriageRe = regexp.MustCompile(`&lt;div class=&quot;m-btn purple&quot; [^&gt;]*&gt;([^&lt;]+)&lt;/div&gt;`)
+var addressRe = regexp.MustCompile(`&lt;div class=&quot;m-btn purple&quot; [^&gt;]*&gt;工作地:([^&lt;]+)&lt;/div&gt;`)
+
+func ParseProfile(bytes []byte, name string, gender string) engine.ParseResult {
+    profile := model.Profile{}
+    profile.Name = name
+    profile.Gender = gender
+    if age, err := strconv.Atoi(extractString(bytes, ageRe)); err == nil {
+        profile.Age = age
+    }
+    if height, err := strconv.Atoi(extractString(bytes, heightRe)); err == nil {
+        profile.Height = height
+    }
+    if weight, err := strconv.Atoi(extractString(bytes, weightRe)); err == nil {
+        profile.Weight = weight
+    }
+
+    profile.Income = extractString(bytes, incomeRe)
+    profile.Marriage = extractString(bytes, marriageRe)
+    profile.Address = extractString(bytes, addressRe)
+    // 解析完用户信息后，没有请求任务
+    result := engine.ParseResult{
+        Items: []interface{}{profile},
+    }
+    return result
+}
+
+func extractString(contents []byte, re *regexp.Regexp) string {
+    submatch := re.FindSubmatch(contents)
+    if len(submatch) &gt;= 2 {
+        return string(submatch[1])
+    } else {
+        return &quot;&quot;
+    }
+}
+</code></pre>
+<h4 id="5、Engine实现"><a href="#5、Engine实现" class="headerlink" title="5、Engine实现"></a>5、Engine实现</h4><p>Engine模块是整个系统的核心，获取网页数据、对数据进行解析以及维护任务队列。</p>
+<pre><code class="go">// /engine/engine.go
+package engine
+
+import (
+    &quot;crawler/fetcher&quot;
+    &quot;log&quot;
+)
+
+// 任务执行函数
+func Run(seeds ...Request) {
+    // 建立任务队列
+    var requests []Request
+    // 把传入的任务添加到任务队列
+    for _, r := range seeds {
+        requests = append(requests, r)
+    }
+    // 只要任务队列不为空就一直爬取
+    for len(requests) &gt; 0 {
+
+        request := requests[0]
+        requests = requests[1:]
+        // 抓取网页内容
+        log.Printf(&quot;Fetching %s\n&quot;, request.Url)
+        content, err := fetcher.Fetch(request.Url)
+        if err != nil {
+            log.Printf(&quot;Fetch error, Url: %s %v\n&quot;, request.Url, err)
+            continue
+        }
+        // 根据任务请求中的解析函数解析网页数据
+        parseResult := request.ParseFunc(content)
+        // 把解析出的请求添加到请求队列
+        requests = append(requests, parseResult.Requests...)
+        // 打印解析出的数据
+        for _, item := range parseResult.Items {
+            log.Printf(&quot;Got item %v\n&quot;, item)
+        }
+    }
+}
+</code></pre>
+<p><code>Engine</code>模块主要是一个<code>Run</code>函数，接收一个或多个任务请求，首先把任务请求添加到任务队列，然后判断任务队列如果不为空就一直从队列中取任务，把任务请求的URL传给<code>Fetcher</code>模块得到网页数据，然后根据任务请求中的解析函数解析网页数据。然后把解析出的请求加入任务队列，把解析出的数据打印出来。</p>
+<h4 id="6、main函数"><a href="#6、main函数" class="headerlink" title="6、main函数"></a>6、main函数</h4><pre><code class="go">package main
+
+import (
+    &quot;crawler/engine&quot;
+    &quot;crawler/zhenai/parser&quot;
+)
+
+func main() {
+    engine.Run(engine.Request{    // 配置请求信息即可
+        Url:       &quot;http://www.zhenai.com/zhenghun&quot;,
+        ParseFunc: parser.ParseCityList,
+    })
+}
+</code></pre>
+<p>在<code>main</code>函数中直接调用<code>Run</code>方法，传入初始请求。</p>
+<h4 id="7、总结"><a href="#7、总结" class="headerlink" title="7、总结"></a>7、总结</h4><p>本次博客中我们用Go语言实现了一个简单的单机版爬虫项目。仅仅聚焦与爬虫核心架构，没有太多复杂的知识，关键是理解<code>Engine</code>模块以及各个解析模块之间的调用关系。</p>
+<p>缺点是单机版爬取速度太慢了，而且没有使用到go语言强大的并发特特性，所以我们下一章会在本次项目的基础上，重构项目为并发版的爬虫。</p>
+<p>如果想获取<a href="https://coding.imooc.com/class/180.html" target="_blank" rel="noopener">Google工程师深度讲解go语言</a>视频资源的，可以在评论区留言。</p>
+<p>项目的<a href="https://github.com/NovemberChopin/golang-crawler" target="_blank" rel="noopener">源代码</a>已经托管到Github上，对于各个版本都有记录，欢迎大家查看，记得给个star，在此先谢谢大家了。</p>
+
+            <hr>
+          </div>
+          <br>
+          <div>
+            
+              <p>
+                <i class="iconfont icon-inbox"></i>
+                
+                  <a class="hover-with-bg" href="/categories/GO">GO</a>
+                  &nbsp;
+                
+              </p>
+            
+            <p>
+              <i class="iconfont icon-tag"></i>
+              
+                <a class="hover-with-bg" href="/tags/%E7%88%AC%E8%99%AB">爬虫</a>
+              
+              <span id="/2019/10/25/Golang实现简单爬虫框架（2）/" class="visitors leancloud_visitors" data-flag-title="Golang实现简单爬虫框架（2）——单任务版爬虫">
+                <em id="visitors-text" class="post-meta-item-text"></em>
+                <i id="visitors-count"></i>
+              </span>
+            </p>
+            
+              <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" rel="nofollow noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="d-none d-lg-block col-lg-2 toc-container">
+      
+  <div id="toc">
+    <p class="h4"><i class="far fa-list-alt"></i>&nbsp;目录</p>
+    <div id="tocbot"></div>
+  </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- custom -->
+
+
+<!-- Comments -->
+<div class="col-lg-7 mx-auto nopadding-md">
+  <div class="container comments mx-auto" id="comments">
+    
+  </div>
+</div>
+
+    
+  </main>
+
+  
+    <a class="z-depth-1" id="scroll-top-button" href="#" role="button">
+      <i class="fa fa-chevron-up scroll-top-arrow" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><b>Hexo</b></a>
+    <i class="iconfont icon-love"></i>
+    <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"> <b>Fluid</b></a>
+    <br>
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script src="/lib/jquery/jquery.min.js" ></script>
+<script src="/lib/popper/popper.min.js" ></script>
+<script src="/lib/bootstrap/js/bootstrap.min.js" ></script>
+<script src="/lib/mdbootstrap/js/mdb.min.js" ></script>
+<script src="/js/main.js" ></script>
+
+
+  <script src="/js/lazyload.js" ></script>
+
+
+  
+    <script src="/lib/tocbot/tocbot.min.js" ></script>
+  
+  <script src="/js/post.js" ></script>
+
+
+  <script src="/lib/prettify/prettify.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      $('pre').addClass('prettyprint  linenums');
+      prettyPrint();
+    })
+  </script>
+
+
+
+  <script src="/lib/typed/typed.min.js" ></script>
+  <script>
+    var typed = new Typed('#subtitle', {
+      strings: [
+        '  ',
+        "Golang实现简单爬虫框架（2）——单任务版爬虫&nbsp;",
+      ],
+      cursorChar: "_",
+      typeSpeed: 70,
+      loop: false,
+    });
+    typed.stop();
+    $(document).ready(function () {
+      $(".typed-cursor").addClass("h2");
+      typed.start();
+    });
+  </script>
+
+
+
+  <script src="/lib/anchor/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "false",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      getSearchFile(path);
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script src="/lib/fancybox/jquery.fancybox.min.js" ></script>
+  <script>
+    $('#post').find('img').each(
+      function () {
+        var _this = $(this);
+        var _src = _this.attr("src");
+        _this.wrap('<a data-fancybox="images" href="' + _src + '" ></a>');
+      }
+    );
+  </script>
+
+
+
+  <script src="/lib/smooth-scroll/smooth-scroll.min.js" ></script>
+
+
+
+
+</body>
+</html>

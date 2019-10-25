@@ -15,7 +15,7 @@
   <meta name="description" content="">
   <meta name="author" content="JS">
   <meta name="keywords" content="">
-  <title>标签 ~ JS-Blog</title>
+  <title>Golang实现简单爬虫框架（1）——项目介绍与环境准备 ~ JS-Blog</title>
 
   <link rel="stylesheet" href="/lib/font-awesome/css/all.min.css"  >
 <link rel="stylesheet" href="/lib/bootstrap/css/bootstrap.min.css"  >
@@ -40,7 +40,7 @@
 
 
 <body>
-  <header style="height: 80vh;">
+  <header style="height: 70vh;">
     <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
   <div class="container">
     <a class="navbar-brand"
@@ -111,6 +111,9 @@
             </span>
 
             
+              <br>
+              <p class="mt-3">星期四, 十月 24日 2019, 3:30 下午</p>
+            
           </div>
 
           
@@ -121,22 +124,94 @@
 
   <main>
     
-      <div class="container nopadding-md">
-        <div class="py-5 z-depth-3" id="board">
-          
-          <div class="container">
-            <div class="row">
-              <div class="col-12 col-md-10 m-auto">
-                
+      
 
-<div class="text-center tagcloud">
-  <a href="/tags/English/" style="font-size: 15px; color: #bbe">English</a> <a href="/tags/乱想/" style="font-size: 15px; color: #bbe">乱想</a> <a href="/tags/爬虫/" style="font-size: 30px; color: #337ab7">爬虫</a>
-</div>
-              </div>
-            </div>
+<div class="container-fluid">
+  <div class="row">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-md">
+      <div class="py-5 z-depth-3" id="board">
+        <div class="post-content mx-auto" id="post">
+          <div class="markdown-body">
+            <p>最近学习Go语言，看了慕课网<a href="https://coding.imooc.com/class/180.html" target="_blank" rel="noopener">Google工程师深度讲解go语言</a>这门课，现在把课程中的爬虫项目整理出来，同时也作为自己学习的一个总结。本人菜鸟一枚，如有任何问题，欢迎大家指正。<br><a id="more"></a></p>
+<h3 id="一、环境准备"><a href="#一、环境准备" class="headerlink" title="一、环境准备"></a>一、环境准备</h3><h4 id="1、go语言安装"><a href="#1、go语言安装" class="headerlink" title="1、go语言安装"></a>1、go语言安装</h4><p>Go安装包下载网址：<a href="https://studygolang.com/dl" target="_blank" rel="noopener">https://studygolang.com/dl</a></p>
+<p>选择对应的版本下载即可</p>
+<p><img src="http://ps5qm062j.bkt.clouddn.com/%E6%89%B9%E6%B3%A8%202019-05-21%20195940.png" srcset="/img/loading.gif" alt="GO语言安装包下载"></p>
+<p>Windows用户推荐使用<strong>msi</strong>安装，简单方便，而且会自动配置好环境变量</p>
+<p>打开Windows中的命令提示符（cmd.exe）执行命令：<code>go version</code>查看go语言版本</p>
+<p><img src="http://ps5qm062j.bkt.clouddn.com/%E6%89%B9%E6%B3%A8%202019-05-21%20200437.png" srcset="/img/loading.gif" alt="查看GO语言版本"></p>
+<h4 id="2、环境配置"><a href="#2、环境配置" class="headerlink" title="2、环境配置"></a>2、环境配置</h4><p>然后我们需要设置Go语言工作空间gopath目录(Go语言开发的项目路径)</p>
+<p>Windows 设置如下，新建一个环境变量名称叫做GOPATH，值为你的工作目录，例如GOPATH=D:\Workspace</p>
+<p>以上 %GOPATH% 目录约定有三个子目录：</p>
+<p><strong>src 存放源代码（比如：.go .c .h .s等）</strong></p>
+<p><strong>pkg 编译后生成的文件（比如：.a）</strong></p>
+<p><strong>bin 编译后生成的可执行文件</strong></p>
+<p>bin和pkg目录可以不创建，go命令会自动创建（如 go install），只需要创建src目录即可。</p>
+<h4 id="3、Goland安装与破解"><a href="#3、Goland安装与破解" class="headerlink" title="3、Goland安装与破解"></a>3、Goland安装与破解</h4><h5 id="（1）安装"><a href="#（1）安装" class="headerlink" title="（1）安装"></a>（1）安装</h5><p>Goland官网：<a href="https://www.jetbrains.com/go/" target="_blank" rel="noopener">https://www.jetbrains.com/go/</a></p>
+<p>选择对应版本下载安装即可</p>
+<p><img src="http://ps5qm062j.bkt.clouddn.com/%E6%89%B9%E6%B3%A8%202019-05-21%20201226.png" srcset="/img/loading.gif" alt="Goland下载"></p>
+<h5 id="（2）破解"><a href="#（2）破解" class="headerlink" title="（2）破解"></a>（2）破解</h5><p>关于Goland的破解方式网上已经又很多文章，可以参考这篇：<a href="https://blog.csdn.net/dodod2012/article/details/82589458" target="_blank" rel="noopener">https://blog.csdn.net/dodod2012/article/details/82589458</a></p>
+<h3 id="二、项目介绍"><a href="#二、项目介绍" class="headerlink" title="二、项目介绍"></a>二、项目介绍</h3><p>本次爬虫爬取的是<a href="http://www.zhenai.com" target="_blank" rel="noopener">珍爱网</a>的用户信息数据，爬取步骤为：</p>
+<ul>
+<li>1.进入珍爱网<a href="http://www.zhenai.com/zhenghun" target="_blank" rel="noopener">城市页面</a>爬取所有的城市信息</li>
+<li>2.进入<a href="http://www.zhenai.com/zhenghun/yantai" target="_blank" rel="noopener">城市详情页</a>爬取用户URL地址信息</li>
+<li>3.进入<a href="http://album.zhenai.com/u/1461901396" target="_blank" rel="noopener">用户详情页</a>爬取所需要的用户信息</li>
+</ul>
+<p>爬虫算法如下</p>
+<p><img src="D:\workplace\MarkDown\爬虫项目\images\批注 2019-05-20 111028.png" srcset="/img/loading.gif" alt="爬虫算法"></p>
+<p>在下篇博客中，会实现一个单机版的爬虫项目，敬请关注。</p>
+
+            <hr>
+          </div>
+          <br>
+          <div>
+            
+              <p>
+                <i class="iconfont icon-inbox"></i>
+                
+                  <a class="hover-with-bg" href="/categories/GO">GO</a>
+                  &nbsp;
+                
+              </p>
+            
+            <p>
+              <i class="iconfont icon-tag"></i>
+              
+                <a class="hover-with-bg" href="/tags/%E7%88%AC%E8%99%AB">爬虫</a>
+              
+              <span id="/2019/10/24/Golang实现简单爬虫框架（1）/" class="visitors leancloud_visitors" data-flag-title="Golang实现简单爬虫框架（1）——项目介绍与环境准备">
+                <em id="visitors-text" class="post-meta-item-text"></em>
+                <i id="visitors-count"></i>
+              </span>
+            </p>
+            
+              <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://zh.wikipedia.org/wiki/Wikipedia:CC_BY-SA_3.0%E5%8D%8F%E8%AE%AE%E6%96%87%E6%9C%AC" rel="nofollow noopener">CC BY-SA 3.0协议</a> 。转载请注明出处！</p>
+            
           </div>
         </div>
       </div>
+    </div>
+    <div class="d-none d-lg-block col-lg-2 toc-container">
+      
+  <div id="toc">
+    <p class="h4"><i class="far fa-list-alt"></i>&nbsp;目录</p>
+    <div id="tocbot"></div>
+  </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- custom -->
+
+
+<!-- Comments -->
+<div class="col-lg-7 mx-auto nopadding-md">
+  <div class="container comments mx-auto" id="comments">
+    
+  </div>
+</div>
+
     
   </main>
 
@@ -191,6 +266,11 @@
   <script src="/js/lazyload.js" ></script>
 
 
+  
+    <script src="/lib/tocbot/tocbot.min.js" ></script>
+  
+  <script src="/js/post.js" ></script>
+
 
   <script src="/lib/prettify/prettify.min.js" ></script>
   <script>
@@ -207,7 +287,7 @@
     var typed = new Typed('#subtitle', {
       strings: [
         '  ',
-        "标签&nbsp;",
+        "Golang实现简单爬虫框架（1）——项目介绍与环境准备&nbsp;",
       ],
       cursorChar: "_",
       typeSpeed: 70,
