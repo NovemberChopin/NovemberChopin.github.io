@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2019-10-25T18:54:42.377Z</updated>
+  <updated>2019-10-26T07:48:12.434Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -15,28 +15,6 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
-  
-  <entry>
-    <title>Golang实现简单爬虫框架（1）——项目介绍与环境准备</title>
-    <link href="http://yoursite.com/2019/10/24/Golang%E5%AE%9E%E7%8E%B0%E7%AE%80%E5%8D%95%E7%88%AC%E8%99%AB%E6%A1%86%E6%9E%B6%EF%BC%881%EF%BC%89/"/>
-    <id>http://yoursite.com/2019/10/24/Golang实现简单爬虫框架（1）/</id>
-    <published>2019-10-24T13:30:47.000Z</published>
-    <updated>2019-10-25T18:54:42.377Z</updated>
-    
-    <content type="html"><![CDATA[<p>最近学习Go语言，看了慕课网<a href="https://coding.imooc.com/class/180.html" target="_blank" rel="noopener">Google工程师深度讲解go语言</a>这门课，现在把课程中的爬虫项目整理出来，同时也作为自己学习的一个总结。本人菜鸟一枚，如有任何问题，欢迎大家指正。<br><a id="more"></a></p><h3 id="一、环境准备"><a href="#一、环境准备" class="headerlink" title="一、环境准备"></a>一、环境准备</h3><h4 id="1、go语言安装"><a href="#1、go语言安装" class="headerlink" title="1、go语言安装"></a>1、go语言安装</h4><p>Go安装包下载网址：<a href="https://studygolang.com/dl" target="_blank" rel="noopener">https://studygolang.com/dl</a></p><p>选择对应的版本下载即可</p><p><img src="http://ps5qm062j.bkt.clouddn.com/%E6%89%B9%E6%B3%A8%202019-05-21%20195940.png" srcset="/img/loading.gif" alt="GO语言安装包下载"></p><p>Windows用户推荐使用<strong>msi</strong>安装，简单方便，而且会自动配置好环境变量</p><p>打开Windows中的命令提示符（cmd.exe）执行命令：<code>go version</code>查看go语言版本</p><p><img src="http://ps5qm062j.bkt.clouddn.com/%E6%89%B9%E6%B3%A8%202019-05-21%20200437.png" srcset="/img/loading.gif" alt="查看GO语言版本"></p><h4 id="2、环境配置"><a href="#2、环境配置" class="headerlink" title="2、环境配置"></a>2、环境配置</h4><p>然后我们需要设置Go语言工作空间gopath目录(Go语言开发的项目路径)</p><p>Windows 设置如下，新建一个环境变量名称叫做GOPATH，值为你的工作目录，例如GOPATH=D:\Workspace</p><p>以上 %GOPATH% 目录约定有三个子目录：</p><p><strong>src 存放源代码（比如：.go .c .h .s等）</strong></p><p><strong>pkg 编译后生成的文件（比如：.a）</strong></p><p><strong>bin 编译后生成的可执行文件</strong></p><p>bin和pkg目录可以不创建，go命令会自动创建（如 go install），只需要创建src目录即可。</p><h4 id="3、Goland安装与破解"><a href="#3、Goland安装与破解" class="headerlink" title="3、Goland安装与破解"></a>3、Goland安装与破解</h4><h5 id="（1）安装"><a href="#（1）安装" class="headerlink" title="（1）安装"></a>（1）安装</h5><p>Goland官网：<a href="https://www.jetbrains.com/go/" target="_blank" rel="noopener">https://www.jetbrains.com/go/</a></p><p>选择对应版本下载安装即可</p><p><img src="http://ps5qm062j.bkt.clouddn.com/%E6%89%B9%E6%B3%A8%202019-05-21%20201226.png" srcset="/img/loading.gif" alt="Goland下载"></p><h5 id="（2）破解"><a href="#（2）破解" class="headerlink" title="（2）破解"></a>（2）破解</h5><p>关于Goland的破解方式网上已经又很多文章，可以参考这篇：<a href="https://blog.csdn.net/dodod2012/article/details/82589458" target="_blank" rel="noopener">https://blog.csdn.net/dodod2012/article/details/82589458</a></p><h3 id="二、项目介绍"><a href="#二、项目介绍" class="headerlink" title="二、项目介绍"></a>二、项目介绍</h3><p>本次爬虫爬取的是<a href="http://www.zhenai.com" target="_blank" rel="noopener">珍爱网</a>的用户信息数据，爬取步骤为：</p><ul><li>1.进入珍爱网<a href="http://www.zhenai.com/zhenghun" target="_blank" rel="noopener">城市页面</a>爬取所有的城市信息</li><li>2.进入<a href="http://www.zhenai.com/zhenghun/yantai" target="_blank" rel="noopener">城市详情页</a>爬取用户URL地址信息</li><li>3.进入<a href="http://album.zhenai.com/u/1461901396" target="_blank" rel="noopener">用户详情页</a>爬取所需要的用户信息</li></ul><p>爬虫算法如下</p><p><img src="D:\workplace\MarkDown\爬虫项目\images\批注 2019-05-20 111028.png" srcset="/img/loading.gif" alt="爬虫算法"></p><p>在下篇博客中，会实现一个单机版的爬虫项目，敬请关注。</p>]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;最近学习Go语言，看了慕课网&lt;a href=&quot;https://coding.imooc.com/class/180.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Google工程师深度讲解go语言&lt;/a&gt;这门课，现在把课程中的爬虫项目整理出来，同时也作为自己学习的一个总结。本人菜鸟一枚，如有任何问题，欢迎大家指正。&lt;br&gt;
-    
-    </summary>
-    
-      <category term="GO" scheme="http://yoursite.com/categories/GO/"/>
-    
-    
-      <category term="爬虫" scheme="http://yoursite.com/tags/%E7%88%AC%E8%99%AB/"/>
-    
-  </entry>
   
   <entry>
     <title>Golang实现简单爬虫框架（5）——项目重构与数据存储</title>
@@ -138,6 +116,30 @@
     
     
       <category term="爬虫" scheme="http://yoursite.com/tags/%E7%88%AC%E8%99%AB/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Golang实现简单爬虫框架（1）——项目介绍与环境准备</title>
+    <link href="http://yoursite.com/2019/10/10/Golang%E5%AE%9E%E7%8E%B0%E7%AE%80%E5%8D%95%E7%88%AC%E8%99%AB%E6%A1%86%E6%9E%B6%EF%BC%881%EF%BC%89/"/>
+    <id>http://yoursite.com/2019/10/10/Golang实现简单爬虫框架（1）/</id>
+    <published>2019-10-10T13:30:47.000Z</published>
+    <updated>2019-10-26T07:49:27.080Z</updated>
+    
+    <content type="html"><![CDATA[<p>最近学习Go语言，看了慕课网<a href="https://coding.imooc.com/class/180.html" target="_blank" rel="noopener">Google工程师深度讲解go语言</a>这门课，现在把课程中的爬虫项目整理出来，同时也作为自己学习的一个总结。本人菜鸟一枚，如有任何问题，欢迎大家指正。<br><a id="more"></a></p><h3 id="一、环境准备"><a href="#一、环境准备" class="headerlink" title="一、环境准备"></a>一、环境准备</h3><h4 id="1、go语言安装"><a href="#1、go语言安装" class="headerlink" title="1、go语言安装"></a>1、go语言安装</h4><p>Go安装包下载网址：<a href="https://studygolang.com/dl" target="_blank" rel="noopener">https://studygolang.com/dl</a></p><p>选择对应的版本下载即可</p><p><img src="http://ps5qm062j.bkt.clouddn.com/%E6%89%B9%E6%B3%A8%202019-05-21%20195940.png" srcset="/img/loading.gif" alt="GO语言安装包下载"></p><p>Windows用户推荐使用<strong>msi</strong>安装，简单方便，而且会自动配置好环境变量</p><p>打开Windows中的命令提示符（cmd.exe）执行命令：<code>go version</code>查看go语言版本</p><p><img src="http://ps5qm062j.bkt.clouddn.com/%E6%89%B9%E6%B3%A8%202019-05-21%20200437.png" srcset="/img/loading.gif" alt="查看GO语言版本"></p><h4 id="2、环境配置"><a href="#2、环境配置" class="headerlink" title="2、环境配置"></a>2、环境配置</h4><p>然后我们需要设置Go语言工作空间gopath目录(Go语言开发的项目路径)</p><p>Windows 设置如下，新建一个环境变量名称叫做GOPATH，值为你的工作目录，例如GOPATH=D:\Workspace</p><p>以上 %GOPATH% 目录约定有三个子目录：</p><p><strong>src 存放源代码（比如：.go .c .h .s等）</strong></p><p><strong>pkg 编译后生成的文件（比如：.a）</strong></p><p><strong>bin 编译后生成的可执行文件</strong></p><p>bin和pkg目录可以不创建，go命令会自动创建（如 go install），只需要创建src目录即可。</p><h4 id="3、Goland安装与破解"><a href="#3、Goland安装与破解" class="headerlink" title="3、Goland安装与破解"></a>3、Goland安装与破解</h4><h5 id="（1）安装"><a href="#（1）安装" class="headerlink" title="（1）安装"></a>（1）安装</h5><p>Goland官网：<a href="https://www.jetbrains.com/go/" target="_blank" rel="noopener">https://www.jetbrains.com/go/</a></p><p>选择对应版本下载安装即可</p><p><img src="http://ps5qm062j.bkt.clouddn.com/%E6%89%B9%E6%B3%A8%202019-05-21%20201226.png" srcset="/img/loading.gif" alt="Goland下载"></p><h5 id="（2）破解"><a href="#（2）破解" class="headerlink" title="（2）破解"></a>（2）破解</h5><p>关于Goland的破解方式网上已经又很多文章，可以参考这篇：<a href="https://blog.csdn.net/dodod2012/article/details/82589458" target="_blank" rel="noopener">https://blog.csdn.net/dodod2012/article/details/82589458</a></p><h3 id="二、项目介绍"><a href="#二、项目介绍" class="headerlink" title="二、项目介绍"></a>二、项目介绍</h3><p>本次爬虫爬取的是<a href="http://www.zhenai.com" target="_blank" rel="noopener">珍爱网</a>的用户信息数据，爬取步骤为：</p><ul><li>1.进入珍爱网<a href="http://www.zhenai.com/zhenghun" target="_blank" rel="noopener">城市页面</a>爬取所有的城市信息</li><li>2.进入<a href="http://www.zhenai.com/zhenghun/yantai" target="_blank" rel="noopener">城市详情页</a>爬取用户URL地址信息</li><li>3.进入<a href="http://album.zhenai.com/u/1461901396" target="_blank" rel="noopener">用户详情页</a>爬取所需要的用户信息</li></ul><p>爬虫算法如下</p><p><img src="D:\workplace\MarkDown\爬虫项目\images\批注 2019-05-20 111028.png" srcset="/img/loading.gif" alt="爬虫算法"></p><p>在下篇博客中，会实现一个单机版的爬虫项目，敬请关注。</p>]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;最近学习Go语言，看了慕课网&lt;a href=&quot;https://coding.imooc.com/class/180.html&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;Google工程师深度讲解go语言&lt;/a&gt;这门课，现在把课程中的爬虫项目整理出来，同时也作为自己学习的一个总结。本人菜鸟一枚，如有任何问题，欢迎大家指正。&lt;br&gt;
+    
+    </summary>
+    
+      <category term="GO" scheme="http://yoursite.com/categories/GO/"/>
+    
+    
+      <category term="爬虫" scheme="http://yoursite.com/tags/%E7%88%AC%E8%99%AB/"/>
+    
+      <category term="Goland" scheme="http://yoursite.com/tags/Goland/"/>
     
   </entry>
   
