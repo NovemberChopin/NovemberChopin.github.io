@@ -138,141 +138,6 @@
     
     
     <div class="col-12 col-md-8 m-auto">
-      <a href="/2019/10/25/Golang实现简单爬虫框架（5）/">
-        <p class="h4 index-header"></p>
-        
-        
-          
-        
-        <div class="index-excerpt" >
-          <div class="index-text mb-1">Golang实现简单爬虫框架（5）——项目重构与数据存储前言在上一篇文章《Golang实现简单爬虫框架（4）——队列实现并发任务调度》中，我们使用用队列实现了任务调度，接下来首先对两种并发方式做一个同构，使代码统一。然后添加数据存储模块。
-注意：本次并发是在上一篇文章简单并发实现的基础上修改，所以没有贴出全部代码，只是贴出部分修改部分，要查看完整项目代码，可以查看上篇文章，或者从github下载项目源代码查看
-1、项目重构（1）并发引擎通过分析我们发现，两种不同调度的区别是每个worker一个channel还是 所有worker共用一个channel，所以我们在接口中定义一个函数WorkerChan()，用来决定这件事，即worker一个channel还是 所有worker共用一个channel。此时ConfigMasterWorkerChan就不再需要了。
-在项目文件concurrent.go中我们定义一个任务调度器Scheduler，如下：
-// 任务调度器
-type Scheduler interface {
-    Submit(request Request) // 提交任务</div>
-        </div>
-      </a>
-
-      <div>
-        
-          <i class="iconfont icon-riqi2"></i>&nbsp;2019-10-25&nbsp;&nbsp;
-        
-        
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mb-4 mx-auto">
-    
-    
-    <div class="col-12 col-md-8 m-auto">
-      <a href="/2019/10/25/Golang实现简单爬虫框架（4）/">
-        <p class="h4 index-header"></p>
-        
-        
-          
-        
-        <div class="index-excerpt" >
-          <div class="index-text mb-1">Golang实现简单爬虫框架（4）——队列实现并发任务调度前言在上一篇文章《Golang实现简单爬虫框架（3）——简单并发版》中我们实现了一个最简单并发爬虫，调度器为每一个Request创建一个goroutine，每个goroutine往Worker队列中分发任务，发完就结束。所有的Worker都在抢一个channel中的任务。但是这样做还是有些许不足之处，比如控制力弱：所有的Worker在抢同一个channel中的任务，我们没有办法控制给哪一个worker任务。
-其实我们可以自己做一个任务分发的机制，我们来决定分发给哪一个Worker
-注意：本次并发是在上一篇文章简单并发实现的基础上修改，所以没有贴出全部代码，只是贴出部分修改部分，要查看完整项目代码，可以查看上篇文章，或者从github下载项目源代码查看
-1、项目架构在上一篇文章实现简单并发的基础上，我们修改下Scheduler的任务分发机制
-
-
-当Scheduler接收到一个Request后，不能直接发给Worker，也不能为每个Request创建一个goroutine，所以这里使用一个Request队列
-同时我们想对Worker</div>
-        </div>
-      </a>
-
-      <div>
-        
-          <i class="iconfont icon-riqi2"></i>&nbsp;2019-10-25&nbsp;&nbsp;
-        
-        
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mb-4 mx-auto">
-    
-    
-    <div class="col-12 col-md-8 m-auto">
-      <a href="/2019/10/25/Golang实现简单爬虫框架（3）/">
-        <p class="h4 index-header"></p>
-        
-        
-          
-        
-        <div class="index-excerpt" >
-          <div class="index-text mb-1">Golang实现简单爬虫框架（3）——简单并发版在上篇文章Golang实现简单爬虫框架（2）——单任务版爬虫中我们实现了一个简单的单任务版爬虫，对于单任务版爬虫，每次都要请求页面，然后解析数据，然后才能请求下一个页面。整个过程中，获取网页数据速度比较慢，那么我们就把获取数据模块做成并发执行。在项目的基础上，实现多任务并发版爬虫。
-项目github地址：https://github.com/NovemberChopin/golang-crawler， 回滚到相应记录食用，效果更佳。
-1、项目架构首先我们把但任务版爬虫架构中的Fetcher模块和Parser模块合并成一个Worker模块，然后并发执行Worker模块
-
-然后得到并发版的架构图：
-
-
-在并发版爬虫中，会同时执行多个Worker，每个Worker任务接受一个Request请求，然后请求页面解析数据，输出解析出的Requests和Item
-
-因为又很多Request和Worker，所以还需要Scheduler模块，负责对请求任务的调度处理
-
-Engine模块接受Worker发送的Requests和Items，当前我们先把Item</div>
-        </div>
-      </a>
-
-      <div>
-        
-          <i class="iconfont icon-riqi2"></i>&nbsp;2019-10-25&nbsp;&nbsp;
-        
-        
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mb-4 mx-auto">
-    
-    
-    <div class="col-12 col-md-8 m-auto">
-      <a href="/2019/10/25/Golang实现简单爬虫框架（2）/">
-        <p class="h4 index-header">Golang实现简单爬虫框架（2）——单任务版爬虫</p>
-        
-        
-          
-          
-        
-        <div class="index-excerpt" style="max-height: none;">
-          <div class="index-text mb-1">上一篇博客《Golang实现简单爬虫框架（1）——项目介绍与环境准备》中我们介绍了go语言的开发环境搭建，以及爬虫项目介绍。...</div>
-        </div>
-      </a>
-
-      <div>
-        
-          <i class="iconfont icon-riqi2"></i>&nbsp;2019-10-25&nbsp;&nbsp;
-        
-        
-          <i class="iconfont icon-inbox"></i>
-          
-            <a href="/categories/GO">GO</a>&nbsp;
-          &nbsp;
-        
-        
-          <i class="iconfont icon-tag"></i>
-          
-            <a href="/tags/%E7%88%AC%E8%99%AB">爬虫</a>&nbsp;
-          
-        
-      </div>
-    </div>
-  </div>
-
-  <div class="row mb-4 mx-auto">
-    
-    
-    <div class="col-12 col-md-8 m-auto">
       <a href="/2019/10/24/Golang实现简单爬虫框架（1）/">
         <p class="h4 index-header">Golang实现简单爬虫框架（1）——项目介绍与环境准备</p>
         
@@ -309,27 +174,169 @@ Engine模块接受Worker发送的Requests和Items，当前我们先把Item</div>
     
     
     <div class="col-12 col-md-8 m-auto">
-      <a href="/2018/04/24/熵：宇宙终极规则/">
-        <p class="h4 index-header">熵：宇宙终极规则</p>
+      <a href="/2019/10/19/Golang实现简单爬虫框架（5）/">
+        <p class="h4 index-header">Golang实现简单爬虫框架（5）——项目重构与数据存储</p>
+        
+        
+          
+        
+        <div class="index-excerpt" >
+          <div class="index-text mb-1">前言在上一篇文章《Golang实现简单爬虫框架（4）——队列实现并发任务调度》中，我们使用用队列实现了任务调度，接下来首先对两种并发方式做一个同构，使代码统一。然后添加数据存储模块。
+注意：本次并发是在上一篇文章简单并发实现的基础上修改，所以没有贴出全部代码，只是贴出部分修改部分，要查看完整项目代码，可以查看上篇文章，或者从github下载项目源代码查看
+1、项目重构（1）并发引擎通过分析我们发现，两种不同调度的区别是每个worker一个channel还是 所有worker共用一个channel，所以我们在接口中定义一个函数WorkerChan()，用来决定这件事，即worker一个channel还是 所有worker共用一个channel。此时ConfigMasterWorkerChan就不再需要了。
+在项目文件concurrent.go中我们定义一个任务调度器Scheduler，如下：
+// 任务调度器
+type Scheduler interface {
+    Submit(request Request) // 提交任务
+    ConfigMasterWorkerChan(</div>
+        </div>
+      </a>
+
+      <div>
+        
+          <i class="iconfont icon-riqi2"></i>&nbsp;2019-10-19&nbsp;&nbsp;
+        
+        
+          <i class="iconfont icon-inbox"></i>
+          
+            <a href="/categories/GO">GO</a>&nbsp;
+          &nbsp;
+        
+        
+          <i class="iconfont icon-tag"></i>
+          
+            <a href="/tags/%E7%88%AC%E8%99%AB">爬虫</a>&nbsp;
+          
+            <a href="/tags/goroutine">goroutine</a>&nbsp;
+          
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-4 mx-auto">
+    
+    
+    <div class="col-12 col-md-8 m-auto">
+      <a href="/2019/10/17/Golang实现简单爬虫框架（4）/">
+        <p class="h4 index-header">Golang实现简单爬虫框架（4）——队列实现并发任务调度</p>
+        
+        
+          
+        
+        <div class="index-excerpt" >
+          <div class="index-text mb-1">前言在上一篇文章《Golang实现简单爬虫框架（3）——简单并发版》中我们实现了一个最简单并发爬虫，调度器为每一个Request创建一个goroutine，每个goroutine往Worker队列中分发任务，发完就结束。所有的Worker都在抢一个channel中的任务。但是这样做还是有些许不足之处，比如控制力弱：所有的Worker在抢同一个channel中的任务，我们没有办法控制给哪一个worker任务。
+其实我们可以自己做一个任务分发的机制，我们来决定分发给哪一个Worker
+注意：本次并发是在上一篇文章简单并发实现的基础上修改，所以没有贴出全部代码，只是贴出部分修改部分，要查看完整项目代码，可以查看上篇文章，或者从github下载项目源代码查看
+1、项目架构在上一篇文章实现简单并发的基础上，我们修改下Scheduler的任务分发机制
+
+
+当Scheduler接收到一个Request后，不能直接发给Worker，也不能为每个Request创建一个goroutine，所以这里使用一个Request队列
+同时我们想对Worker实现一个更多的控制，可以决定把任务分发给哪一个Worker</div>
+        </div>
+      </a>
+
+      <div>
+        
+          <i class="iconfont icon-riqi2"></i>&nbsp;2019-10-17&nbsp;&nbsp;
+        
+        
+          <i class="iconfont icon-inbox"></i>
+          
+            <a href="/categories/GO">GO</a>&nbsp;
+          &nbsp;
+        
+        
+          <i class="iconfont icon-tag"></i>
+          
+            <a href="/tags/%E7%88%AC%E8%99%AB">爬虫</a>&nbsp;
+          
+            <a href="/tags/goroutine">goroutine</a>&nbsp;
+          
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-4 mx-auto">
+    
+    
+    <div class="col-12 col-md-8 m-auto">
+      <a href="/2019/10/15/Golang实现简单爬虫框架（3）/">
+        <p class="h4 index-header">Golang实现简单爬虫框架（3）——简单并发版</p>
+        
+        
+          
+        
+        <div class="index-excerpt" >
+          <div class="index-text mb-1">在上篇文章Golang实现简单爬虫框架（2）——单任务版爬虫中我们实现了一个简单的单任务版爬虫，对于单任务版爬虫，每次都要请求页面，然后解析数据，然后才能请求下一个页面。整个过程中，获取网页数据速度比较慢，那么我们就把获取数据模块做成并发执行。在项目的基础上，实现多任务并发版爬虫。
+项目github地址：https://github.com/NovemberChopin/golang-crawler， 回滚到相应记录食用，效果更佳。
+1、项目架构首先我们把但任务版爬虫架构中的Fetcher模块和Parser模块合并成一个Worker模块，然后并发执行Worker模块
+
+然后得到并发版的架构图：
+
+
+在并发版爬虫中，会同时执行多个Worker，每个Worker任务接受一个Request请求，然后请求页面解析数据，输出解析出的Requests和Item
+
+因为又很多Request和Worker，所以还需要Scheduler模块，负责对请求任务的调度处理
+
+Engine模块接受Worker发送的Requests和Items，当前我们先把Items打印出，把解析出的Request发送给调度器
+</div>
+        </div>
+      </a>
+
+      <div>
+        
+          <i class="iconfont icon-riqi2"></i>&nbsp;2019-10-15&nbsp;&nbsp;
+        
+        
+          <i class="iconfont icon-inbox"></i>
+          
+            <a href="/categories/GO">GO</a>&nbsp;
+          &nbsp;
+        
+        
+          <i class="iconfont icon-tag"></i>
+          
+            <a href="/tags/%E7%88%AC%E8%99%AB">爬虫</a>&nbsp;
+          
+            <a href="/tags/goroutine">goroutine</a>&nbsp;
+          
+        
+      </div>
+    </div>
+  </div>
+
+  <div class="row mb-4 mx-auto">
+    
+    
+    <div class="col-12 col-md-8 m-auto">
+      <a href="/2019/10/12/Golang实现简单爬虫框架（2）/">
+        <p class="h4 index-header">Golang实现简单爬虫框架（2）——单任务版爬虫</p>
         
         
           
           
         
         <div class="index-excerpt" style="max-height: none;">
-          <div class="index-text mb-1">我觉得整个宇宙，或者是各种行星星云，小到各种细胞原子，以及各种生物。他们必然都遵守有一些共同的规则。比如我们从出生开始就一直在走向死亡，那么放大到宇宙，既然存在宇宙，那么它就在走向毁灭。...</div>
+          <div class="index-text mb-1">上一篇博客《Golang实现简单爬虫框架（1）——项目介绍与环境准备》中我们介绍了go语言的开发环境搭建，以及爬虫项目介绍。...</div>
         </div>
       </a>
 
       <div>
         
-          <i class="iconfont icon-riqi2"></i>&nbsp;2018-04-24&nbsp;&nbsp;
+          <i class="iconfont icon-riqi2"></i>&nbsp;2019-10-12&nbsp;&nbsp;
         
+        
+          <i class="iconfont icon-inbox"></i>
+          
+            <a href="/categories/GO">GO</a>&nbsp;
+          &nbsp;
         
         
           <i class="iconfont icon-tag"></i>
           
-            <a href="/tags/%E4%B9%B1%E6%83%B3">乱想</a>&nbsp;
+            <a href="/tags/%E7%88%AC%E8%99%AB">爬虫</a>&nbsp;
           
         
       </div>

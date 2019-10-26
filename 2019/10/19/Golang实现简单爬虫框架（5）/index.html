@@ -15,7 +15,7 @@
   <meta name="description" content="">
   <meta name="author" content="JS">
   <meta name="keywords" content="">
-  <title>JS-Blog</title>
+  <title>Golang实现简单爬虫框架（5）——项目重构与数据存储 ~ JS-Blog</title>
 
   <link rel="stylesheet" href="/lib/font-awesome/css/all.min.css"  >
 <link rel="stylesheet" href="/lib/bootstrap/css/bootstrap.min.css"  >
@@ -112,7 +112,7 @@
 
             
               <br>
-              <p class="mt-3">星期五, 十月 25日 2019, 8:59 晚上</p>
+              <p class="mt-3">星期六, 十月 19日 2019, 3:06 下午</p>
             
           </div>
 
@@ -133,7 +133,7 @@
       <div class="py-5 z-depth-3" id="board">
         <div class="post-content mx-auto" id="post">
           <div class="markdown-body">
-            <h1 id="Golang实现简单爬虫框架（5）——项目重构与数据存储"><a href="#Golang实现简单爬虫框架（5）——项目重构与数据存储" class="headerlink" title="Golang实现简单爬虫框架（5）——项目重构与数据存储"></a>Golang实现简单爬虫框架（5）——项目重构与数据存储</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>在上一篇文章<a href="https://www.jianshu.com/p/0eaaa1626d6f" target="_blank" rel="noopener">《Golang实现简单爬虫框架（4）——队列实现并发任务调度》</a>中，我们使用用队列实现了任务调度，接下来首先对两种并发方式做一个同构，使代码统一。然后添加数据存储模块。</p>
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>在上一篇文章<a href="https://www.jianshu.com/p/0eaaa1626d6f" target="_blank" rel="noopener">《Golang实现简单爬虫框架（4）——队列实现并发任务调度》</a>中，我们使用用队列实现了任务调度，接下来首先对两种并发方式做一个同构，使代码统一。然后添加数据存储模块。</p>
 <p><strong>注意：本次并发是在上一篇文章简单并发实现的基础上修改，所以没有贴出全部代码，只是贴出部分修改部分，要查看完整项目代码，可以查看上篇文章，或者从github下载<a href="https://github.com/NovemberChopin/golang-crawler" target="_blank" rel="noopener">项目源代码查看</a></strong></p>
 <h2 id="1、项目重构"><a href="#1、项目重构" class="headerlink" title="1、项目重构"></a>1、项目重构</h2><h3 id="（1）并发引擎"><a href="#（1）并发引擎" class="headerlink" title="（1）并发引擎"></a>（1）并发引擎</h3><p>通过分析我们发现，两种不同调度的区别是每个<code>worker</code>一个<code>channel</code>还是 所有<code>worker</code>共用一个<code>channel</code>，所以我们在接口中定义一个函数<code>WorkerChan()</code>，用来决定这件事，即<code>worker</code>一个<code>channel</code>还是 所有<code>worker</code>共用一个<code>channel</code>。此时<code>ConfigMasterWorkerChan</code>就不再需要了。</p>
 <p>在项目文件concurrent.go中我们定义一个任务调度器Scheduler，如下：</p>
@@ -567,10 +567,22 @@ func main() {
           <br>
           <div>
             
+              <p>
+                <i class="iconfont icon-inbox"></i>
+                
+                  <a class="hover-with-bg" href="/categories/GO">GO</a>
+                  &nbsp;
+                
+              </p>
+            
             <p>
               <i class="iconfont icon-tag"></i>
               
-              <span id="/2019/10/25/Golang实现简单爬虫框架（5）/" class="visitors leancloud_visitors" data-flag-title="">
+                <a class="hover-with-bg" href="/tags/%E7%88%AC%E8%99%AB">爬虫</a>
+              
+                <a class="hover-with-bg" href="/tags/goroutine">goroutine</a>
+              
+              <span id="/2019/10/19/Golang实现简单爬虫框架（5）/" class="visitors leancloud_visitors" data-flag-title="Golang实现简单爬虫框架（5）——项目重构与数据存储">
                 <em id="visitors-text" class="post-meta-item-text"></em>
                 <i id="visitors-count"></i>
               </span>
@@ -678,7 +690,7 @@ func main() {
     var typed = new Typed('#subtitle', {
       strings: [
         '  ',
-        "&nbsp;",
+        "Golang实现简单爬虫框架（5）——项目重构与数据存储&nbsp;",
       ],
       cursorChar: "_",
       typeSpeed: 70,

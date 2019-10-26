@@ -15,7 +15,7 @@
   <meta name="description" content="">
   <meta name="author" content="JS">
   <meta name="keywords" content="">
-  <title>JS-Blog</title>
+  <title>Golang实现简单爬虫框架（4）——队列实现并发任务调度 ~ JS-Blog</title>
 
   <link rel="stylesheet" href="/lib/font-awesome/css/all.min.css"  >
 <link rel="stylesheet" href="/lib/bootstrap/css/bootstrap.min.css"  >
@@ -112,7 +112,7 @@
 
             
               <br>
-              <p class="mt-3">星期五, 十月 25日 2019, 8:59 晚上</p>
+              <p class="mt-3">星期四, 十月 17日 2019, 2:22 下午</p>
             
           </div>
 
@@ -133,130 +133,144 @@
       <div class="py-5 z-depth-3" id="board">
         <div class="post-content mx-auto" id="post">
           <div class="markdown-body">
-            <h1 id="Golang实现简单爬虫框架（3）——简单并发版"><a href="#Golang实现简单爬虫框架（3）——简单并发版" class="headerlink" title="Golang实现简单爬虫框架（3）——简单并发版"></a>Golang实现简单爬虫框架（3）——简单并发版</h1><p>在上篇文章<a href="https://www.jianshu.com/p/37abb663ac84" target="_blank" rel="noopener">Golang实现简单爬虫框架（2）——单任务版爬虫</a>中我们实现了一个简单的单任务版爬虫，对于单任务版爬虫，每次都要请求页面，然后解析数据，然后才能请求下一个页面。整个过程中，获取网页数据速度比较慢，那么我们就把获取数据模块做成并发执行。在项目的基础上，实现多任务并发版爬虫。</p>
-<p>项目github地址：<a href="https://github.com/NovemberChopin/golang-crawler，" target="_blank" rel="noopener">https://github.com/NovemberChopin/golang-crawler，</a> 回滚到相应记录食用，效果更佳。</p>
-<h2 id="1、项目架构"><a href="#1、项目架构" class="headerlink" title="1、项目架构"></a>1、项目架构</h2><p>首先我们把但任务版爬虫架构中的<code>Fetcher</code>模块和<code>Parser</code>模块合并成一个<code>Worker</code>模块，然后并发执行<code>Worker</code>模块</p>
-<p><img src="http://ps5qm062j.bkt.clouddn.com/%E6%89%B9%E6%B3%A8%202019-05-22%20090404.png" srcset="/img/loading.gif" alt=""></p>
-<p>然后得到并发版的架构图：</p>
-<p><img src="http://ps5qm062j.bkt.clouddn.com/%E6%89%B9%E6%B3%A8%202019-05-22%20091229.png" srcset="/img/loading.gif" alt=""></p>
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>在上一篇文章<a href="https://www.jianshu.com/p/3ca93124017b" target="_blank" rel="noopener">《Golang实现简单爬虫框架（3）——简单并发版》</a>中我们实现了一个最简单并发爬虫，调度器为每一个<code>Request</code>创建一个<code>goroutine</code>，每个<code>goroutine</code>往<code>Worker</code>队列中分发任务，发完就结束。所有的<code>Worker</code>都在抢一个<code>channel</code>中的任务。但是这样做还是有些许不足之处，比如控制力弱：所有的Worker在抢同一个<code>channel</code>中的任务，我们没有办法控制给哪一个worker任务。</p>
+<p>其实我们可以自己做一个任务分发的机制，我们来决定分发给哪一个Worker</p>
+<p><strong>注意：本次并发是在上一篇文章简单并发实现的基础上修改，所以没有贴出全部代码，只是贴出部分修改部分，要查看完整项目代码，可以查看上篇文章，或者从github下载<a href="https://github.com/NovemberChopin/golang-crawler" target="_blank" rel="noopener">项目源代码查看</a></strong></p>
+<h2 id="1、项目架构"><a href="#1、项目架构" class="headerlink" title="1、项目架构"></a>1、项目架构</h2><p>在上一篇文章实现简单并发的基础上，我们修改下<code>Scheduler</code>的任务分发机制</p>
+<p><img src="http://ps5qm062j.bkt.clouddn.com/%E6%89%B9%E6%B3%A8%202019-05-29%20134103.png" srcset="/img/loading.gif" alt=""></p>
 <ul>
-<li><p>在并发版爬虫中，会同时执行多个<code>Worker</code>，每个<code>Worker</code>任务接受一个<code>Request</code>请求，然后请求页面解析数据，输出解析出的<code>Requests</code>和<code>Item</code></p>
-</li>
-<li><p>因为又很多<code>Request</code>和<code>Worker</code>，所以还需要<code>Scheduler</code>模块，负责对请求任务的调度处理</p>
-</li>
-<li><p><code>Engine</code>模块接受<code>Worker</code>发送的<code>Requests</code>和<code>Items</code>，当前我们先把<code>Items</code>打印出，把解析出的<code>Request</code>发送给调度器</p>
-</li>
-<li><p>其中<code>Engine</code>和<code>Scheduler</code>是一个<code>goroutine</code>，<code>Worker</code>包含多个<code>goroutine</code>，各个模块之间都是用<code>channel</code>进行连接</p>
-<p>先放上重构后的项目文件结构：</p>
-<p><img src="http://ps5qm062j.bkt.clouddn.com/%E6%89%B9%E6%B3%A8%202019-05-22%20093830.png" srcset="/img/loading.gif" alt="文件结构"></p>
-</li>
+<li>当<code>Scheduler</code>接收到一个<code>Request</code>后，不能直接发给<code>Worker</code>，也不能为每个<code>Request</code>创建一个<code>goroutine</code>，所以这里使用一个Request队列</li>
+<li>同时我们想对<code>Worker</code>实现一个更多的控制，可以决定把任务分发给哪一个<code>Worker</code>，所以这里我们还需要一个<code>Worker</code>队列</li>
+<li>当有了<code>Request</code>和<code>Worker</code>，我们就可以把选择的Request发送给选择的<code>Worker</code></li>
 </ul>
-<h2 id="2、Worker实现"><a href="#2、Worker实现" class="headerlink" title="2、Worker实现"></a>2、Worker实现</h2><p>我们从engine.go中提取下面功能作为Worker模块，同时把engine.go 更名为simple.go。修改后的simple.go文件请自行调整，或者去github项目<a href="https://github.com/NovemberChopin/golang-crawler" target="_blank" rel="noopener">源代码</a>回滚查看。</p>
-<p>engine/worker.go</p>
-<pre><code class="go">package engine
-
-import (
-    &quot;crawler/fetcher&quot;
-    &quot;log&quot;
-)
-
-// 输入 Request， 返回 ParseResult
-func worker(request Request) (ParseResult, error) {
-    log.Printf(&quot;Fetching %s\n&quot;, request.Url)
-    content, err := fetcher.Fetch(request.Url)
-    if err != nil {
-        log.Printf(&quot;Fetch error, Url: %s %v\n&quot;, request.Url, err)
-        return ParseResult{}, err
-    }
-    return request.ParseFunc(content), nil
-}
-</code></pre>
-<p>对于每一个Worker接受一个请求，然后返回解析出的内容</p>
-<h2 id="3、并发引擎Concurrent实现"><a href="#3、并发引擎Concurrent实现" class="headerlink" title="3、并发引擎Concurrent实现"></a>3、并发引擎Concurrent实现</h2><p>请大家根据架构图来看，效果会更好。</p>
-<pre><code>package engine
-
-import &quot;log&quot;
-
-// 并发引擎
-type ConcurrendEngine struct {
-   Scheduler   Scheduler    // 任务调度器
-   WorkerCount int            // 任务并发数量
-}
-
-// 任务调度器
-type Scheduler interface {
-   Submit(request Request) // 提交任务
-   ConfigMasterWorkerChan(chan Request)    // 配置初始请求任务
-}
-
-func (e *ConcurrendEngine) Run(seeds ...Request) {
-
-   in := make(chan Request)            // scheduler的输入
-   out := make(chan ParseResult)    // worker的输出
-   e.Scheduler.ConfigMasterWorkerChan(in)    // 把初始请求提交给scheduler
-
-   // 创建 goruntine
-   for i := 0; i &lt; e.WorkerCount; i++ {
-      createWorker(in, out)
-   }
-
-   // engine把请求任务提交给 Scheduler
-   for _, request := range seeds {
-      e.Scheduler.Submit(request)
-   }
-
-   itemCount := 0
-   for {
-      // 接受 Worker 的解析结果
-      result := &lt;-out
-      for _, item := range result.Items {
-         log.Printf(&quot;Got item: #%d: %v\n&quot;, itemCount, item)
-         itemCount++
-      }
-
-      // 然后把 Worker 解析出的 Request 送给 Scheduler
-      for _, request := range result.Requests {
-         e.Scheduler.Submit(request)
-      }
-   }
-}
-
-// 创建任务，调用worker，分发goroutine
-func createWorker(in chan Request, out chan ParseResult) {
-   go func() {
-      for {
-         request := &lt;-in
-         result, err := worker(request)
-         if err != nil {
-            continue
-         }
-         out &lt;- result
-      }
-   }()
-}
-</code></pre><h2 id="4、任务调度器Scheduler实现"><a href="#4、任务调度器Scheduler实现" class="headerlink" title="4、任务调度器Scheduler实现"></a>4、任务调度器Scheduler实现</h2><p>scheduler/scheduler.go</p>
+<h2 id="2、队列实现任务调度器"><a href="#2、队列实现任务调度器" class="headerlink" title="2、队列实现任务调度器"></a>2、队列实现任务调度器</h2><p>在scheduler目录下创建queued.go文件</p>
 <pre><code class="go">package scheduler
 
 import &quot;crawler/engine&quot;
 
-type SimpleScheduler struct {
-    workerChan chan engine.Request
+// 使用队列来调度任务
+
+type QueuedScheduler struct {
+    requestChan chan engine.Request        // Request channel
+    // Worker channel, 其中每一个Worker是一个 chan engine.Request 类型
+    workerChan  chan chan engine.Request    
 }
 
-func (s *SimpleScheduler) Submit(request engine.Request) {
-    // send request down to worker chan
+// 提交请求任务到 requestChannel
+func (s *QueuedScheduler) Submit(request engine.Request) {
+    s.requestChan &lt;- request
+}
+
+func (s *QueuedScheduler) ConfigMasterWorkerChan(chan engine.Request) {
+    panic(&quot;implement me&quot;)
+}
+
+// 告诉外界有一个 worker 可以接收 request
+func (s *QueuedScheduler) WorkerReady(w chan engine.Request) {
+    s.workerChan &lt;- w
+}
+
+func (s *QueuedScheduler) Run() {
+    // 生成channel
+    s.workerChan = make(chan chan engine.Request)
+    s.requestChan = make(chan engine.Request)
     go func() {
-        s.workerChan &lt;- request
+        // 创建请求队列和工作队列
+        var requestQ []engine.Request
+        var workerQ []chan engine.Request
+        for {
+            var activeWorker chan engine.Request
+            var activeRequest engine.Request
+
+            // 当requestQ和workerQ同时有数据时
+            if len(requestQ) &gt; 0 &amp;&amp; len(workerQ) &gt; 0 {
+                activeWorker = workerQ[0]
+                activeRequest = requestQ[0]
+            }
+
+            select {
+            case r := &lt;-s.requestChan: // 当 requestChan 收到数据
+                requestQ = append(requestQ, r)
+            case w := &lt;-s.workerChan: // 当 workerChan 收到数据
+                workerQ = append(workerQ, w)
+            case activeWorker &lt;- activeRequest: // 当请求队列和认读队列都不为空时，给任务队列分配任务
+                requestQ = requestQ[1:]
+                workerQ = workerQ[1:]
+            }
+        }
     }()
 }
 
-// 把初始请求发送给 Scheduler
-func (s *SimpleScheduler) ConfigMasterWorkerChan(in chan engine.Request) {
-    s.workerChan = in
+</code></pre>
+<h2 id="3、爬虫引擎"><a href="#3、爬虫引擎" class="headerlink" title="3、爬虫引擎"></a>3、爬虫引擎</h2><p>修改后的concurrent.go文件如下</p>
+<pre><code class="go">package engine
+
+import (
+    &quot;log&quot;
+)
+
+// 并发引擎
+type ConcurrendEngine struct {
+    Scheduler   Scheduler
+    WorkerCount int
 }
 
+// 任务调度器
+type Scheduler interface {
+    Submit(request Request) // 提交任务
+    ConfigMasterWorkerChan(chan Request)
+    WorkerReady(w chan Request)
+    Run()
+}
+
+func (e *ConcurrendEngine) Run(seeds ...Request) {
+
+    out := make(chan ParseResult)
+    e.Scheduler.Run()
+
+    // 创建 goruntine
+    for i := 0; i &lt; e.WorkerCount; i++ {
+        createWorker(out, e.Scheduler)
+    }
+
+    // engine把请求任务提交给 Scheduler
+    for _, request := range seeds {
+        e.Scheduler.Submit(request)
+    }
+
+    itemCount := 0
+    for {
+        // 接受 Worker 的解析结果
+        result := &lt;-out
+        for _, item := range result.Items {
+            log.Printf(&quot;Got item: #%d: %v\n&quot;, itemCount, item)
+            itemCount++
+        }
+
+        // 然后把 Worker 解析出的 Request 送给 Scheduler
+        for _, request := range result.Requests {
+            e.Scheduler.Submit(request)
+        }
+    }
+}
+
+func createWorker(out chan ParseResult, s Scheduler) {
+    // 为每一个Worker创建一个channel
+    in := make(chan Request)
+    go func() {
+        for {
+            s.WorkerReady(in) // 告诉调度器任务空闲
+            request := &lt;-in
+            result, err := worker(request)
+            if err != nil {
+                continue
+            }
+            out &lt;- result
+        }
+    }()
+}
 </code></pre>
-<h2 id="5、main函数"><a href="#5、main函数" class="headerlink" title="5、main函数"></a>5、main函数</h2><pre><code class="go">package main
+<h2 id="4、main函数"><a href="#4、main函数" class="headerlink" title="4、main函数"></a>4、main函数</h2><pre><code class="go">package main
 
 import (
     &quot;crawler/engine&quot;
@@ -265,29 +279,48 @@ import (
 )
 
 func main() {
-    e := engine.ConcurrendEngine{    // 配置爬虫引擎
-        Scheduler:   &amp;scheduler.SimpleScheduler{},
+    e := engine.ConcurrendEngine{
+        Scheduler:   &amp;scheduler.QueuedScheduler{},// 这里调用并发调度器
         WorkerCount: 50,
     }
-    e.Run(engine.Request{        // 配置爬虫目标信息
+    e.Run(engine.Request{
         Url:       &quot;http://www.zhenai.com/zhenghun&quot;,
         ParseFunc: parser.ParseCityList,
     })
 }
 </code></pre>
-<h2 id="6、小结"><a href="#6、小结" class="headerlink" title="6、小结"></a>6、小结</h2><p>本次博客我们实现一个最简单的并发版爬虫，调度器源源不断的接受任务，一旦有一个worker空闲，就给其分配任务。这样子有一个缺点，就是我们不知道我们分发出那么多worker的工作情况，对worker的控制力比较弱，所以在下次博客中会用队列来实现任务调度。</p>
-<p>如果想获取<a href="https://coding.imooc.com/class/180.html" target="_blank" rel="noopener">Google工程师深度讲解go语言</a>视频资源的，可以在评论区留言。</p>
-<p>项目的<a href="https://github.com/NovemberChopin/golang-crawler" target="_blank" rel="noopener">源代码</a>已经托管到Github上，对于各个版本都有记录，欢迎大家查看，记得给个star，在此先谢谢大家了</p>
+<p>运行结果如下：</p>
+<p><img src="http://ps5qm062j.bkt.clouddn.com/%E6%89%B9%E6%B3%A8%202019-05-23%20100718.png" srcset="/img/loading.gif" alt=""></p>
+<h2 id="5、总结"><a href="#5、总结" class="headerlink" title="5、总结"></a>5、总结</h2><p>在这篇文章中我们使用队列实现对并发任务的调度，从而实现了对Worker的控制。我们现在并发有两种实现方式，但是他们的调度方法是不同的，为了代码的统一，所以在下一篇文章中的内容有：</p>
+<ul>
+<li>对项目做一个同构</li>
+<li>添加数据的存储模块。</li>
+</ul>
+<p>如果想获取<a href="https://coding.imooc.com/class/180.html" target="_blank" rel="noopener">Google工程师深度讲解go语言</a>视频资源的，可以在评论区留下邮箱。</p>
+<p>项目的<a href="https://github.com/NovemberChopin/golang-crawler" target="_blank" rel="noopener">源代码</a>已经托管到Github上，对于各个版本都有记录，欢迎大家查看，记得给个star，在此先谢谢大家</p>
+<p>如果觉得博客不错，劳烦大人给个赞，</p>
 
             <hr>
           </div>
           <br>
           <div>
             
+              <p>
+                <i class="iconfont icon-inbox"></i>
+                
+                  <a class="hover-with-bg" href="/categories/GO">GO</a>
+                  &nbsp;
+                
+              </p>
+            
             <p>
               <i class="iconfont icon-tag"></i>
               
-              <span id="/2019/10/25/Golang实现简单爬虫框架（3）/" class="visitors leancloud_visitors" data-flag-title="">
+                <a class="hover-with-bg" href="/tags/%E7%88%AC%E8%99%AB">爬虫</a>
+              
+                <a class="hover-with-bg" href="/tags/goroutine">goroutine</a>
+              
+              <span id="/2019/10/17/Golang实现简单爬虫框架（4）/" class="visitors leancloud_visitors" data-flag-title="Golang实现简单爬虫框架（4）——队列实现并发任务调度">
                 <em id="visitors-text" class="post-meta-item-text"></em>
                 <i id="visitors-count"></i>
               </span>
@@ -395,7 +428,7 @@ func main() {
     var typed = new Typed('#subtitle', {
       strings: [
         '  ',
-        "&nbsp;",
+        "Golang实现简单爬虫框架（4）——队列实现并发任务调度&nbsp;",
       ],
       cursorChar: "_",
       typeSpeed: 70,
